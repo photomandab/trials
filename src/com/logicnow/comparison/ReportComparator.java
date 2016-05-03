@@ -26,7 +26,6 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.logicnow.comparison.CompUtils.CSVRecord;
-import com.logicnow.utils.FileUtils;
 import com.opencsv.CSVReader;
 
 public class ReportComparator {
@@ -66,7 +65,7 @@ public class ReportComparator {
 		if (!amarilloFile.exists()) throw new IllegalArgumentException("Amarillo CSV file [" + amarilloFile.getAbsolutePath() + "] does not exist");
 		if (!sfdcFile.exists()) throw new IllegalArgumentException("SFDC CSV file [" + sfdcFile.getAbsolutePath() + "] does not exist");
 
-		JsonReader jsonReader = Json.createReader(new StringReader(FileUtils.readFileAsText(configFile)));
+		JsonReader jsonReader = Json.createReader(new StringReader(CompUtils.readFileAsText(configFile)));
 		JsonObject configs = jsonReader.readObject();
 		jsonReader.close();
 		

@@ -1,10 +1,14 @@
 package com.logicnow.comparison;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
@@ -28,13 +32,21 @@ import com.opencsv.CSVWriter;
 public class CompUtils {
 
 	private static int MIN_WIDTH = 3000;
+	public static final String ENCODING_UTF_8 = "UTF-8";
 	public static final SimpleDateFormat TIME_FORMAT = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss"); 
 	public static final String NL = System.getProperty("line.separator");	
 	public static final String[] COMBINED_HEADERS = new String[] { 
 		"Tenant ID", "Lead ID", "In Both", "In Amarillo Only", "In SFDC Only", 
 		"Both Valid", "Neither Valid", "Valid Amarillo Only", "Valid SFDC Only", "Mismatch", 
 		"Dupe in SFDC", "Reason", "Details" };
+
+	public static String readFileAsText(File f) throws IOException {
+		BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(f), ENCODING_UTF_8));
+		try { return readAsText(reader); } finally { reader.close(); }
+	}
 	
+	public static String readAsText(Reader r) throws IOException { return org.apache.commons.io.IOUtils.toString(r); }
+
 	public static String generateAmarilloId(String tenant, String product) {
 		String id = tenant;
 		if ("RM".equals(product) || "RM(IT)".equals(product)) {
@@ -49,7 +61,7 @@ public class CompUtils {
 		}
 		return id;
 	}
-	
+
 	public static void writeCSVFile(File tmpFile, Pair<String[], List<CSVRecord>> records) throws IOException {
 		tmpFile.getParentFile().mkdirs();
 		try (CSVWriter writer = new CSVWriter(new FileWriter(tmpFile))) {
@@ -115,13 +127,13 @@ public class CompUtils {
 	public static String toPercentage(int numerator, int denominator) {
 		return toPercentage((float)((float)numerator/(float)denominator));
 	}
-	
+
 	public static String toPercentage(float n) {
 		return toPercentage(n, 1);
 	}
-	
+
 	public static String toPercentage(float n, int digits){
-	    return String.format("%."+digits+"f",n*100)+"%";
+		return String.format("%."+digits+"f",n*100)+"%";
 	}
 
 	@SafeVarargs
@@ -150,51 +162,51 @@ public class CompUtils {
 	public static TreeSet<String> getSortedSet(Set<String> set) {
 		if (set == null) return null;
 		TreeSet<String> sorted = new TreeSet<>();
-	    sorted.addAll(set);
-	    return sorted; 
+		sorted.addAll(set);
+		return sorted; 
 	}
 
 	public static void writeExcelFile(File file, String d, ResultPayload[] payloads) {
 		HSSFWorkbook wb = new HSSFWorkbook();
 		Font defaultFont = wb.getFontAt((short)0);
-	    defaultFont.setFontName("Arial");
-	    defaultFont.setFontHeight((short)12);
-	    // Add summary sheet
-	    for (ResultPayload p : payloads) {
+		defaultFont.setFontName("Arial");
+		defaultFont.setFontHeight((short)12);
+		// Add summary sheet
+		for (ResultPayload p : payloads) {
 			String product = p.getProduct();
 			HSSFSheet sheet = wb.createSheet(product + " Info");
 			p.populateInfoSheet(sheet);
-	    }
+		}
 		// Add product sheets
-	    for (ResultPayload p : payloads) {
+		for (ResultPayload p : payloads) {
 			String product = p.getProduct();
 			HSSFSheet sheet = wb.createSheet(product);
 			p.populateSheet(sheet);
 		}
-	    
-	    // Add Amarillo All sheet
+
+		// Add Amarillo All sheet
 		CompUtils.addRecordsToSheet(wb, wb.createSheet("All Amarillo"), payloads[0].getAmarilloAllRecords());
 		// Add SFDC All sheet
 		CompUtils.addRecordsToSheet(wb, wb.createSheet("All SFDC"), payloads[0].getSfdcAllRecords());
-	    // Add feed sheet
+		// Add feed sheet
 		CompUtils.addRecordsToSheet(wb, wb.createSheet("SFDC Feed"), payloads[0].getFeedRecords());
-	
+
 		try {
-		    FileOutputStream out = new FileOutputStream(file);
-		    wb.write(out);
-		    out.close();
-		    System.out.println("Excel file written successfully");
+			FileOutputStream out = new FileOutputStream(file);
+			wb.write(out);
+			out.close();
+			System.out.println("Excel file written successfully");
 		} catch (FileNotFoundException e) {
-		    e.printStackTrace();
+			e.printStackTrace();
 		} catch (IOException e) {
-		    e.printStackTrace();
+			e.printStackTrace();
 		} finally {
 			try { wb.close(); } catch (IOException e) {
 				e.printStackTrace();
 			}			
 		}
 	}
-	
+
 	public static class CSVRecord {
 		public String[] items;
 		public CSVRecord(String[] items) {
@@ -221,7 +233,7 @@ public class CompUtils {
 			sheet.setColumnWidth(column, MIN_WIDTH);
 		}
 	}
-	
+
 	public static String getStringValue(String str) {
 		return str == null ? "" : str.trim();
 	}
@@ -237,7 +249,7 @@ public class CompUtils {
 	public static void addRecordsToSheet(HSSFWorkbook wb, HSSFSheet sheet, Pair<String[], List<CSVRecord>> records) {
 		addRecordsToSheet(wb, sheet, records, null);
 	}
-	
+
 	public static void addRecordsToSheet(HSSFWorkbook wb, HSSFSheet sheet, Pair<String[], List<CSVRecord>> records, ComparatorConfig config) {
 		int rownum = 0;
 		Row row = sheet.createRow(rownum++);
