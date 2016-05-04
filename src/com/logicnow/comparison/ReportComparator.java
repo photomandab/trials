@@ -46,7 +46,7 @@ public class ReportComparator {
 	}
 	
 	
-	public ResultPayload compare(String d, String dateTime, String configPath, String amarilloPath, String sfdcPath, String feedPath) throws Exception {
+	public ResultPayload compare(String startDate, String endDate, String dateTime, String configPath, String amarilloPath, String sfdcPath, String feedPath) throws Exception {
 		
 		System.out.println();
 		System.out.println("---------------------------------------------------------");
@@ -54,7 +54,7 @@ public class ReportComparator {
 
 		System.out.println(MessageFormat.format("Processing comparison config=[{0}] amarillo=[{1}] sfdc=[{2}] feed=[{3}] ", new Object[] { configPath, amarilloPath, sfdcPath, feedPath }));
 
-		ResultPayload result = new ResultPayload(d, configPath, amarilloPath, sfdcPath, feedPath);
+		ResultPayload result = new ResultPayload(startDate, endDate, configPath, amarilloPath, sfdcPath, feedPath);
 
 		File configFile = new File(configPath);
 		File amarilloFile = new File(amarilloPath);

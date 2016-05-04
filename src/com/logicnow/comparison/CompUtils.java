@@ -10,9 +10,11 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.text.MessageFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -33,6 +35,10 @@ public class CompUtils {
 
 	private static int MIN_WIDTH = 3000;
 	public static final String ENCODING_UTF_8 = "UTF-8";
+	public static final SimpleDateFormat DATE_FORMAT_1 = new SimpleDateFormat("yyyy-MM-dd"); 
+	public static final SimpleDateFormat DATE_FORMAT_2 = new SimpleDateFormat("MM/dd/yyyy");
+	public static final SimpleDateFormat[] DATE_FORMATS = new SimpleDateFormat[] { DATE_FORMAT_1, DATE_FORMAT_2 }; 
+	
 	public static final SimpleDateFormat TIME_FORMAT = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss"); 
 	public static final String NL = System.getProperty("line.separator");	
 	public static final String[] COMBINED_HEADERS = new String[] { 
@@ -293,6 +299,18 @@ public class CompUtils {
 				}
 			}			
 		}
+	}
+
+	public static Date parseDate(String d) {
+		Date parsed = null;
+		for (SimpleDateFormat format : DATE_FORMATS) {
+			try {
+				parsed = format.parse(d);
+			} catch (ParseException e) {
+			}
+			if (parsed != null) break;
+		}
+		return parsed;
 	}
 
 }

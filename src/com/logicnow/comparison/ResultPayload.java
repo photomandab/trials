@@ -19,6 +19,8 @@ import com.logicnow.comparison.ReportComparator.CombinedRow;
 
 public class ResultPayload {
 
+	private static final String MULTIPLE = "(Multiple)";
+
 	private String product;
 
 	private Map<String, List<CSVRecord>> amarilloMap;
@@ -46,19 +48,25 @@ public class ResultPayload {
 
 	private Pair<ComparatorConfig, ComparatorConfig> configs;
 
-	private String date;
+	private String startDate;
+	private String endDate;
 	private String configFile;
 	private String amarilloFile;
 	private String sfdcFile;
 	private String feedFile;
 
-	public ResultPayload(String date, String configFile, String amarilloFile, String sfdcFile, String feedFile) {
-		this.date = date;
+	public ResultPayload(String startDate, String endDate, String configFile, String amarilloFile, String sfdcFile, String feedFile) {
+		this.startDate = startDate;
+		this.endDate = endDate;
 		this.configFile = configFile;
 		this.amarilloFile = amarilloFile;
 		this.sfdcFile = sfdcFile;
 		this.feedFile = feedFile;
 	}
+	
+	public Date getStartDate() { return parseDate(startDate); }
+	public Date getEndDate() { return parseDate(endDate); }
+	private Date parseDate(String d) { return CompUtils.parseDate(startDate); }
 
 	public Set<String> getBoth() { return both; }
 	public void setBoth(Set<String> both) { this.both = both; }
@@ -91,24 +99,39 @@ public class ResultPayload {
 	public void setCombined(Set<String> combined) { this.combined = combined; }
 
 	public Pair<String[], List<CompUtils.CSVRecord>> getAmarilloRecords() { return amarilloRecords; }
-	public void setAmarilloRecords(Pair<String[], List<CompUtils.CSVRecord>> amarilloRecords) {
-		this.amarilloRecords = amarilloRecords;
-	}
+	public void setAmarilloRecords(Pair<String[], List<CompUtils.CSVRecord>> amarilloRecords) { this.amarilloRecords = amarilloRecords; }
 
 	public Pair<String[], List<CompUtils.CSVRecord>> getSfdcRecords() { return sfdcRecords; }
-	public void setSfdcRecords(Pair<String[], List<CompUtils.CSVRecord>> sfdcRecords) {
-		this.sfdcRecords = sfdcRecords;
-	}
+	public void setSfdcRecords(Pair<String[], List<CompUtils.CSVRecord>> sfdcRecords) { this.sfdcRecords = sfdcRecords; }
 
 	public Pair<String[], List<CompUtils.CSVRecord>> getFeedRecords() { return feedRecords; }
-	public void setFeedRecords(Pair<String[], List<CompUtils.CSVRecord>> feedRecords) {
-		this.feedRecords = feedRecords;
-	}
+	public void setFeedRecords(Pair<String[], List<CompUtils.CSVRecord>> feedRecords) { this.feedRecords = feedRecords; }
+
+	public Map<String, List<CSVRecord>> getAmarilloMap() { return amarilloMap; }
+	public void setAmarilloMap(Map<String, List<CSVRecord>> amarilloMap) { this.amarilloMap = amarilloMap; }
+
+	public Map<String, List<CSVRecord>> getAmarilloAllMap() { return amarilloAllMap; }
+	public void setAmarilloAllMap(Map<String, List<CSVRecord>> amarilloAllMap) { this.amarilloAllMap = amarilloAllMap; }
+
+	public Map<String, List<CSVRecord>> getSFDCMap() { return sfdcMap; }
+	public void setSFDCMap(Map<String, List<CSVRecord>> sfdcMap) { this.sfdcMap = sfdcMap; }
+	
+	public Map<String, List<CSVRecord>> getSfdcAllMap() { return sfdcAllMap; }
+	public void setSfdcAllMap(Map<String, List<CSVRecord>> sfdcAllMap) { this.sfdcAllMap = sfdcAllMap; }
+
+	public Map<String, List<CSVRecord>> geFeedCMap() { return feedMap; }
+	public void setFeedMap(Map<String, List<CSVRecord>> feedMap) { this.feedMap = feedMap; }
+
+	public Pair<String[], List<CSVRecord>> getSfdcAllRecords() { return sfdcAllRecords; }
+	public void setSfdcAllRecords(Pair<String[], List<CSVRecord>> sfdcAllRecords) { this.sfdcAllRecords = sfdcAllRecords; }
+	
+	public Pair<String[], List<CSVRecord>> getAmarilloAllRecords() { return amarilloAllRecords; }
+	public void setAmarilloAllRecords(Pair<String[], List<CSVRecord>> amarilloAllRecords) { this.amarilloAllRecords = amarilloAllRecords; }
 
 	public Pair<ComparatorConfig, ComparatorConfig> getConfigs() { return configs; }
 	public void setConfig(Pair<ComparatorConfig, ComparatorConfig> configs) { this.configs = configs; }
 
-	public String getDate() { return date;}
+	public String getDate() { return endDate;}
 	public String getConfigFile() { return configFile; }
 	public String getAmarilloFile() { return amarilloFile; }
 	public String getSfdcFile() { return sfdcFile; }
@@ -143,7 +166,7 @@ public class ResultPayload {
 			if (mismatchValidity.contains(tenant)) row.mismatch = 1;
 			if (sfdcDupes.contains(tenant)) row.dupeInSFDC = 1;
 			// Try and establish a reason for discrepancy
-			Pair<String, String> reasons = establishReasons(row);
+			Pair<String, String> reasons = establishReason(row);
 			row.reason1 = reasons != null ? reasons.getLeft() : "";
 			row.reason2 = reasons != null ? reasons.getRight() : "";
 			// Add the item to the list
@@ -187,7 +210,7 @@ public class ResultPayload {
 		}
 	}
 
-	private Pair<String, String> establishReasons(CombinedRow item) {
+	private Pair<String, String> establishReason(CombinedRow item) {
 		String tenantId = item.tenantId;
 		List<CSVRecord> aRecords = amarilloAllMap.get(tenantId);
 		List<CSVRecord> sRecords = sfdcAllMap.get(tenantId);
@@ -200,14 +223,53 @@ public class ResultPayload {
 		Pair<String, String> reason = null;
 		if ((reason = checkTerritoryChange(item, aRecords, sRecords, fRecords)) != null) {
 			return reason;
-		}
-		if ((reason = checkProductChange(item, aRecords, sRecords, fRecords)) != null) {
+		} else if ((reason = checkProductChange(item, aRecords, sRecords, fRecords)) != null) {
 			return reason;
-		}
-		if ((reason = checkReUsedTenant(item, aRecords, sRecords, fRecords)) != null) {
+		} else if ((reason = checkReUsedTenant(item, aRecords, sRecords, fRecords)) != null) {
+			return reason;
+		} else if ((reason = checkEmployeeTesting(item, aRecords, sRecords, fRecords)) != null) {
+			return reason;
+		} else if ((reason = checkSFDCDupesVaryingValidity(item, aRecords, sRecords, fRecords)) != null) {
+			return reason;
+		} else if ((reason = checkTimingIssue(item, aRecords, sRecords, fRecords)) != null) {
 			return reason;
 		}
 		
+		return null;
+	}
+
+	private Pair<String, String> checkTimingIssue(CombinedRow item, List<CSVRecord> aRecords, List<CSVRecord> sRecords, List<CSVRecord> fRecords) {
+		Date start = getStartDate();
+		Date end = getEndDate();
+		List<String> attributes = getAttributes(sfdcAllRecords.getLeft(), sRecords, "Trial Start");
+		String value = getListValueOrMultiple(attributes);
+		Date trialStart = value != null && !MULTIPLE.equals(value) ? parseDate(value) : null;
+		if (trialStart != null) {
+			if (trialStart.before(start) || trialStart.after(end)) {
+				return Pair.of("Timing Issue", "Trial Start out of Range in SFDC");					
+			}
+		}
+		
+		return null;
+	}
+
+	private Pair<String, String> checkSFDCDupesVaryingValidity(CombinedRow item, List<CSVRecord> aRecords, List<CSVRecord> sRecords, List<CSVRecord> fRecords) {
+		if (sfdcDupes.contains(item.tenantId)) {
+			List<String> attributes = getAttributes(sfdcAllRecords.getLeft(), sRecords, "Is Valid");
+			String value = getListValueOrMultiple(attributes);
+			if (MULTIPLE.equals(value)) {
+				return Pair.of("Multiple entry in SFDC", "Different validity values");
+			}
+		}
+		return null;
+	}
+
+	private Pair<String, String> checkEmployeeTesting(CombinedRow item, List<CSVRecord> aRecords, List<CSVRecord> sRecords, List<CSVRecord> fRecords) {
+		List<String> attribution = getAttributes(amarilloAllRecords.getLeft(), aRecords, "LN Attribution Group");
+		String value = getListValueOrMultiple(attribution);
+		if ("Employee Testing".equals(value)) {
+			return Pair.of("Employee Testing", "Amarillo identifies as Test Trial");
+		}
 		return null;
 	}
 
@@ -215,7 +277,7 @@ public class ResultPayload {
 		if (item.isInAmarilloOnly()) {
 			List<String> tenants = getAttributes(feedRecords.getLeft(), fRecords, "TenantID");
 			if (CompUtils.isEmpty(tenants)) {
-				return Pair.of("Not in SFDC Feed", "");
+				return Pair.of("Not in SFDC Feed", "Validity not read from SFDC");
 			}
 		}
 		return null;
@@ -278,7 +340,7 @@ public class ResultPayload {
 		if (items.size() > 1) {
 			Set<String> set = Sets.newHashSet(items);
 			if (set.size() == 1) return items.get(0);	
-			else return "(Multiple)";
+			else return MULTIPLE;
 		}
 		return null;
 	}
@@ -333,7 +395,7 @@ public class ResultPayload {
 		
 		// Overview
 		rownum = addHeaderRow(sheet, rownum, product + " Trial Count Breakdown");
-		rownum = addDataRow(sheet, rownum, "Total", new Object[] { totalSize });
+		rownum = addDataRow(sheet, rownum, "Total", new Object[] { totalSize, "100%" });
 		rownum = addDataRow(sheet, rownum, "In Both", new Object[] { bothSize, CompUtils.toPercentage(bothSize, totalSize) });
 		rownum = addDataRow(sheet, rownum, "In Amarillo Only", new Object[] { onlyAmarilloSize, CompUtils.toPercentage(onlyAmarilloSize, totalSize) });
 		rownum = addDataRow(sheet, rownum, "In SFDC Only", new Object[] { onlySFDCSize, CompUtils.toPercentage(onlySFDCSize, totalSize) });
@@ -400,24 +462,4 @@ public class ResultPayload {
 		CompUtils.addRecordsToSheet(wb, sheet, sfdcRecords, configs.getRight());
 	}
 
-	public Map<String, List<CSVRecord>> getAmarilloMap() { return amarilloMap; }
-	public void setAmarilloMap(Map<String, List<CSVRecord>> amarilloMap) { this.amarilloMap = amarilloMap; }
-
-	public Map<String, List<CSVRecord>> getAmarilloAllMap() { return amarilloAllMap; }
-	public void setAmarilloAllMap(Map<String, List<CSVRecord>> amarilloAllMap) { this.amarilloAllMap = amarilloAllMap; }
-
-	public Map<String, List<CSVRecord>> getSFDCMap() { return sfdcMap; }
-	public void setSFDCMap(Map<String, List<CSVRecord>> sfdcMap) { this.sfdcMap = sfdcMap; }
-	
-	public Map<String, List<CSVRecord>> getSfdcAllMap() { return sfdcAllMap; }
-	public void setSfdcAllMap(Map<String, List<CSVRecord>> sfdcAllMap) { this.sfdcAllMap = sfdcAllMap; }
-
-	public Map<String, List<CSVRecord>> geFeedCMap() { return feedMap; }
-	public void setFeedMap(Map<String, List<CSVRecord>> feedMap) { this.feedMap = feedMap; }
-
-	public Pair<String[], List<CSVRecord>> getSfdcAllRecords() { return sfdcAllRecords; }
-	public void setSfdcAllRecords(Pair<String[], List<CSVRecord>> sfdcAllRecords) { this.sfdcAllRecords = sfdcAllRecords; }
-	
-	public Pair<String[], List<CSVRecord>> getAmarilloAllRecords() { return amarilloAllRecords; }
-	public void setAmarilloAllRecords(Pair<String[], List<CSVRecord>> amarilloAllRecords) { this.amarilloAllRecords = amarilloAllRecords; }
 }
