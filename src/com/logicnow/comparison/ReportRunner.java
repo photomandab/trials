@@ -5,7 +5,7 @@ import java.util.Calendar;
 
 public class ReportRunner {
 	
-	public static final String DATE = "2016-05-02";
+	public static final String DATE = "2016-05-03";
 	public static final String DIR_TARGET = "target";	
 	public static final String DIR_CONFIG = "test/data/";	
 	public static final String DIR_DATA = DIR_TARGET + "/data/";	
@@ -26,8 +26,7 @@ public class ReportRunner {
 		ResultPayload r1 = runner.run(DATE, dateTime, DIR_CONFIG + "RM/config_1.json", PREFIX_AMARILLO + DATE + ".csv", PREFIX_SFDC + DATE + ".csv", PREFIX_FEED + DATE + ".csv");
 		ResultPayload r2 = runner.run(DATE, dateTime, DIR_CONFIG + "RMIT/config_1.json", PREFIX_AMARILLO + DATE + ".csv", PREFIX_SFDC + DATE + ".csv", PREFIX_FEED + DATE + ".csv");
 		ResultPayload r3 = runner.run(DATE, dateTime, DIR_CONFIG + "BU/config_1.json", PREFIX_AMARILLO + DATE + ".csv", PREFIX_SFDC + DATE + ".csv", PREFIX_FEED + DATE + ".csv");
-		File targetDir = new File(DIR_TARGET);
-		File tmpOutputDir = new File(targetDir, DIR_OUTPUT);
+		File tmpOutputDir = new File(DIR_OUTPUT);
 		File outputDir = new File(tmpOutputDir, dateTime);
 		if (!outputDir.exists()) outputDir.mkdirs();
 		File excelFile = new File(outputDir, PREFIX_ANALYSIS + DATE + ".xls");

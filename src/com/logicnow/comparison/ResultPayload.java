@@ -100,7 +100,7 @@ public class ResultPayload {
 		this.sfdcRecords = sfdcRecords;
 	}
 
-	public Pair<String[], List<CompUtils.CSVRecord>> getFeedRecords() { return sfdcRecords; }
+	public Pair<String[], List<CompUtils.CSVRecord>> getFeedRecords() { return feedRecords; }
 	public void setFeedRecords(Pair<String[], List<CompUtils.CSVRecord>> feedRecords) {
 		this.feedRecords = feedRecords;
 	}
@@ -204,7 +204,20 @@ public class ResultPayload {
 		if ((reason = checkProductChange(item, aRecords, sRecords, fRecords)) != null) {
 			return reason;
 		}
+		if ((reason = checkReUsedTenant(item, aRecords, sRecords, fRecords)) != null) {
+			return reason;
+		}
 		
+		return null;
+	}
+
+	private Pair<String, String> checkReUsedTenant(CombinedRow item, List<CSVRecord> aRecords, List<CSVRecord> sRecords, List<CSVRecord> fRecords) {
+		if (item.isInAmarilloOnly()) {
+			List<String> tenants = getAttributes(feedRecords.getLeft(), fRecords, "TenantID");
+			if (CompUtils.isEmpty(tenants)) {
+				return Pair.of("Not in SFDC Feed", "");
+			}
+		}
 		return null;
 	}
 
@@ -213,17 +226,21 @@ public class ResultPayload {
 		List<String> sProducts = getAttributes(sfdcAllRecords.getLeft(), sRecords, "Core Product");
 		List<String> fProducts = getAttributes(feedRecords.getLeft(), fRecords, "Product");
 		
-		String aProduct = !CompUtils.isEmpty(aProducts) ? aProducts.get(0) : null;		
-		String sProduct = !CompUtils.isEmpty(sProducts) ? sProducts.get(0) : null;
-		String fProduct = !CompUtils.isEmpty(fProducts) ? fProducts.get(0) : null;
+		String aProduct = !CompUtils.isEmpty(aProducts) ? getListValueOrMultiple(aProducts) : null;		
+		String sProduct = !CompUtils.isEmpty(sProducts) ? getListValueOrMultiple(sProducts) : null;
+		String fProduct = !CompUtils.isEmpty(fProducts) ? getListValueOrMultiple(fProducts) : null;
+		
+		aProduct = mappedProduct(aProduct);
+		sProduct = mappedProduct(sProduct);
+		fProduct = mappedProduct(fProduct);
 		
 		if (item.isInBoth() && !CompUtils.isBlank(aProduct) && !aProduct.equals(mappedProduct(sProduct))) {
 			return Pair.of("Product Change", aProduct + " in Amarillo, " + sProduct + " in SFDC");
-		} else if (item.isInAmarilloOnly() && !CompUtils.isBlank(sProduct) && !CompUtils.isBlank(aProduct) && !aProduct.equals(mappedProduct(sProduct))) {
+		} else if (item.isInAmarilloOnly() && !CompUtils.isBlank(sProduct) && !CompUtils.isBlank(aProduct) && !aProduct.equals(sProduct)) {
 			return Pair.of("Product Change", aProduct + " in Amarillo, " + fProduct + " in SFDC");
-		} else if (item.isInAmarilloOnly() && !CompUtils.isBlank(fProduct) && !CompUtils.isBlank(aProduct) && !aProduct.equals(mappedProduct(fProduct))) {
+		} else if (item.isInAmarilloOnly() && !CompUtils.isBlank(fProduct) && !CompUtils.isBlank(aProduct) && !aProduct.equals(fProduct)) {
 			return Pair.of("Product Change", aProduct + " in Amarillo, " + fProduct + " in SFDC Feed");
-		} else if (item.isInSFDCOnly() && !CompUtils.isBlank(sProduct) && !CompUtils.isBlank(aProduct) && !sProduct.equals(mappedProduct(aProduct))) {
+		} else if (item.isInSFDCOnly() && !CompUtils.isBlank(sProduct) && !CompUtils.isBlank(aProduct) && !sProduct.equals(aProduct)) {
 			return Pair.of("Product Change", aProduct + " in Amarillo, " + sProduct + " in SFDC");
 		}
 		
@@ -235,20 +252,34 @@ public class ResultPayload {
 		List<String> sRegions = getAttributes(sfdcAllRecords.getLeft(), sRecords, "Group");
 		List<String> fRegions = getAttributes(feedRecords.getLeft(), fRecords, "Territory___Lead");
 		
-		String aRegion = aRegions != null && aRegions.size() > 0 ? aRegions.get(0) : null;		
-		String sRegion = sRegions != null && sRegions.size() > 0 ? sRegions.get(0) : null;
-		String fRegion = fRegions != null && fRegions.size() > 0 ? fRegions.get(0) : null;
+		String aRegion = aRegions != null && aRegions.size() > 0 ? getListValueOrMultiple(aRegions) : null;		
+		String sRegion = sRegions != null && sRegions.size() > 0 ? getListValueOrMultiple(sRegions) : null;
+		String fRegion = fRegions != null && fRegions.size() > 0 ? getListValueOrMultiple(fRegions) : null;
 		
-		if (item.isInBoth() && sRegion != null && !CompUtils.isBlank(aRegion) && !aRegion.equals(mappedRegion(sRegion))) {
+		aRegion = mappedRegion(aRegion);
+		sRegion = mappedRegion(sRegion);
+		fRegion = mappedRegion(fRegion);
+		
+		if (item.isInBoth() && sRegion != null && !CompUtils.isBlank(aRegion) && !aRegion.equals(sRegion)) {
 			return Pair.of("Territory Change", aRegion + " in Amarillo, " + sRegion + " in SFDC");
-		} else if (item.isInAmarilloOnly() && sRegion != null && aRegion != null && !aRegion.equals(mappedRegion(sRegion))) {
-			return Pair.of("Territory Change", aRegion + " in Amarillo " + sRegion + " in SFDC");
-		} else if (item.isInAmarilloOnly() && fRegion != null && aRegion != null && !aRegion.equals(mappedRegion(fRegion))) {
-			return Pair.of("Territory Change", aRegion + " in Amarillo " + fRegion + " in SFDC Feed");
-		} else if (item.isInSFDCOnly() && sRegion != null && aRegion != null && !aRegion.equals(mappedRegion(sRegion))) {
-			return Pair.of("Territory Change", aRegion + " in Amarillo " + sRegion + " in SFDC");
+		} else if (item.isInAmarilloOnly() && sRegion != null && aRegion != null && !aRegion.equals(sRegion)) {
+			return Pair.of("Territory Change", aRegion + " in Amarillo, " + sRegion + " in SFDC");
+		} else if (item.isInAmarilloOnly() && fRegion != null && aRegion != null && !aRegion.equals(fRegion)) {
+			return Pair.of("Territory Change", aRegion + " in Amarillo, " + fRegion + " in SFDC Feed");
+		} else if (item.isInSFDCOnly() && sRegion != null && aRegion != null && !aRegion.equals(sRegion)) {
+			return Pair.of("Territory Change", aRegion + " in Amarillo, " + sRegion + " in SFDC");
 		}
 		
+		return null;
+	}
+
+	private String getListValueOrMultiple(List<String> items) {
+		if (items.size() == 1) return items.get(0);
+		if (items.size() > 1) {
+			Set<String> set = Sets.newHashSet(items);
+			if (set.size() == 1) return items.get(0);	
+			else return "(Multiple)";
+		}
 		return null;
 	}
 
@@ -262,6 +293,7 @@ public class ResultPayload {
 		if ("LN - MAXIT".equals(p)) return "RM(IT)";
 		return p;
 	}
+	
 	private String mappedRegion(String region) {
 		if ("1 - North America".equals(region)) return "NAM";
 		if ("2 - LATAM".equals(region)) return "LATAM";
