@@ -66,7 +66,7 @@ public class ResultPayload {
 	
 	public Date getStartDate() { return parseDate(startDate); }
 	public Date getEndDate() { return parseDate(endDate); }
-	private Date parseDate(String d) { return CompUtils.parseDate(startDate); }
+	private Date parseDate(String d) { return CompUtils.parseDate(d); }
 
 	public Set<String> getBoth() { return both; }
 	public void setBoth(Set<String> both) { this.both = both; }
@@ -241,9 +241,9 @@ public class ResultPayload {
 	private Pair<String, String> checkTimingIssue(CombinedRow item, List<CSVRecord> aRecords, List<CSVRecord> sRecords, List<CSVRecord> fRecords) {
 		Date start = getStartDate();
 		Date end = getEndDate();
-		List<String> attributes = getAttributes(sfdcAllRecords.getLeft(), sRecords, "Trial Start");
+		List<String> attributes = getAttributes(feedRecords.getLeft(), fRecords, "Trial_Start");
 		String value = getListValueOrMultiple(attributes);
-		Date trialStart = value != null && !MULTIPLE.equals(value) ? parseDate(value) : null;
+		Date trialStart = (value != null && !MULTIPLE.equals(value)) ? parseDate(value) : null;
 		if (trialStart != null) {
 			if (trialStart.before(start) || trialStart.after(end)) {
 				return Pair.of("Timing Issue", "Trial Start out of Range in SFDC");					

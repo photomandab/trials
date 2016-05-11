@@ -78,6 +78,7 @@ public class ReportComparator {
 		Pair<String[], List<CSVRecord>> amarilloRecords = readCSVFile(leftConfig, amarilloFile);
 		amarilloRecords = generateTenants(leftConfig, amarilloRecords);
 		result.setAmarilloRecords(amarilloRecords);
+//		CompUtils.writeCSVFile(new File("target/output/amarillo_filtered.csv"), amarilloRecords);
 
 		Pair<String[], List<CSVRecord>> amarilloAllRecords = readCSVFile(null, amarilloFile);
 		amarilloAllRecords = generateTenants(leftConfig, amarilloAllRecords);

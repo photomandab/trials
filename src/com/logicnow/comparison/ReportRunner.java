@@ -6,7 +6,7 @@ import java.util.Calendar;
 public class ReportRunner {
 	
 	public static final String START_DATE = "2016-04-01";
-	public static final String END_DATE = "2016-05-03";
+	public static final String END_DATE = "2016-05-09";
 	public static final String DIR_TARGET = "target";	
 	public static final String DIR_CONFIG = "test/data/";	
 	public static final String DIR_DATA = DIR_TARGET + "/data/";	
