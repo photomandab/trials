@@ -173,7 +173,7 @@ public class CompUtils {
 		return sorted; 
 	}
 
-	public static void writeExcelFile(File file, String d, ResultPayload[] payloads) {
+	public static void writeExcelFile(File file, ResultPayload... payloads) {
 		HSSFWorkbook wb = new HSSFWorkbook();
 		Font defaultFont = wb.getFontAt((short)0);
 		defaultFont.setFontName("Arial");

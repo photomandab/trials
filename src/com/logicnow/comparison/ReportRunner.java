@@ -5,8 +5,8 @@ import java.util.Calendar;
 
 public class ReportRunner {
 	
-	public static final String START_DATE = "2016-04-01";
-	public static final String END_DATE = "2016-05-09";
+	public static final String START_DATE = "2016-05-10";
+	public static final String END_DATE = "2016-05-12";
 	public static final String DIR_TARGET = "target";	
 	public static final String DIR_CONFIG = "test/data/";	
 	public static final String DIR_DATA = DIR_TARGET + "/data/";	
@@ -24,14 +24,26 @@ public class ReportRunner {
 	public static void main(String[] args) throws Exception {
 		ReportRunner runner = new ReportRunner();
 		String dateTime = CompUtils.TIME_FORMAT.format(Calendar.getInstance().getTime()).replace(":", "-");
-		ResultPayload r1 = runner.run(START_DATE, END_DATE, dateTime, DIR_CONFIG + "RM/config_1.json", PREFIX_AMARILLO + END_DATE + ".csv", PREFIX_SFDC + END_DATE + ".csv", PREFIX_FEED + END_DATE + ".csv");
-		ResultPayload r2 = runner.run(START_DATE, END_DATE, dateTime, DIR_CONFIG + "RMIT/config_1.json", PREFIX_AMARILLO + END_DATE + ".csv", PREFIX_SFDC + END_DATE + ".csv", PREFIX_FEED + END_DATE + ".csv");
-		ResultPayload r3 = runner.run(START_DATE, END_DATE, dateTime, DIR_CONFIG + "BU/config_1.json", PREFIX_AMARILLO + END_DATE + ".csv", PREFIX_SFDC + END_DATE + ".csv", PREFIX_FEED + END_DATE + ".csv");
+		ResultPayload r1 = runner.run(START_DATE, END_DATE, dateTime, 
+				DIR_CONFIG + "RM/config_1.json", 
+				PREFIX_AMARILLO + START_DATE + "_" + END_DATE + ".csv", 
+				PREFIX_SFDC + START_DATE + "_" + END_DATE + ".csv", 
+				PREFIX_FEED + START_DATE + "_" + END_DATE + ".csv");
+		ResultPayload r2 = runner.run(START_DATE, END_DATE, dateTime, 
+				DIR_CONFIG + "RMIT/config_1.json", 
+				PREFIX_AMARILLO + START_DATE + "_" + END_DATE + ".csv", 
+				PREFIX_SFDC + START_DATE + "_" + END_DATE + ".csv", 
+				PREFIX_FEED + START_DATE + "_" + END_DATE + ".csv");
+		ResultPayload r3 = runner.run(START_DATE, END_DATE, dateTime, 
+				DIR_CONFIG + "BU/config_1.json", 
+				PREFIX_AMARILLO + START_DATE + "_" + END_DATE + ".csv", 
+				PREFIX_SFDC + START_DATE + "_" + END_DATE + ".csv", 
+				PREFIX_FEED + START_DATE + "_" + END_DATE + ".csv");
 		File tmpOutputDir = new File(DIR_OUTPUT);
 		File outputDir = new File(tmpOutputDir, dateTime);
 		if (!outputDir.exists()) outputDir.mkdirs();
-		File excelFile = new File(outputDir, PREFIX_ANALYSIS + END_DATE + ".xls");
-		CompUtils.writeExcelFile(excelFile, END_DATE, new ResultPayload[] { r1, r2, r3 });
+		File excelFile = new File(outputDir, PREFIX_ANALYSIS + START_DATE + "_" + END_DATE + ".xls");
+		CompUtils.writeExcelFile(excelFile, r1, r2, r3);
 	}
 
 }

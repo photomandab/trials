@@ -78,7 +78,6 @@ public class ReportComparator {
 		Pair<String[], List<CSVRecord>> amarilloRecords = readCSVFile(leftConfig, amarilloFile);
 		amarilloRecords = generateTenants(leftConfig, amarilloRecords);
 		result.setAmarilloRecords(amarilloRecords);
-//		CompUtils.writeCSVFile(new File("target/output/amarillo_filtered.csv"), amarilloRecords);
 
 		Pair<String[], List<CSVRecord>> amarilloAllRecords = readCSVFile(null, amarilloFile);
 		amarilloAllRecords = generateTenants(leftConfig, amarilloAllRecords);
@@ -136,21 +135,13 @@ public class ReportComparator {
 			if ("1".equals(rightValidity)) sfdcValid.add(tenant);
 			boolean inBoth = intersection.contains(tenant);
 			if ("1".equals(leftValidity)) {	
-				if ("1".equals(rightValidity)) {
-					bothValid.add(tenant);
-				} else {
-					onlyAmarilloValid.add(tenant);
-				}
+				if ("1".equals(rightValidity)) bothValid.add(tenant);
+				else onlyAmarilloValid.add(tenant);
 			} else {
-				if ("1".equals(rightValidity)) {
-					onlySFDCValid.add(tenant);
-				} else if (inBoth) {
-					neitherValid.add(tenant);
-				}
+				if ("1".equals(rightValidity)) onlySFDCValid.add(tenant);
+				else if (inBoth) neitherValid.add(tenant);
 			}
-			if (inBoth && !leftValidity.equals(rightValidity)) {
-				mismatchValidity.add(tenant);
-			}
+			if (inBoth && !leftValidity.equals(rightValidity)) mismatchValidity.add(tenant);
 		}
 
 		// Totals

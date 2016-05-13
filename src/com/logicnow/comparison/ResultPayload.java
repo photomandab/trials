@@ -233,8 +233,33 @@ public class ResultPayload {
 			return reason;
 		} else if ((reason = checkTimingIssue(item, aRecords, sRecords, fRecords)) != null) {
 			return reason;
+		} else if ((reason = checkCustomerTrial(item, aRecords, sRecords, fRecords)) != null) {
+			return reason;
+		} else if ((reason = checkOpportunityType(item, aRecords, sRecords, fRecords)) != null) {
+			return reason;
 		}
 		
+		return null;
+	}
+
+	private Pair<String, String> checkOpportunityType(CombinedRow item, List<CSVRecord> aRecords, List<CSVRecord> sRecords, List<CSVRecord> fRecords) {
+		List<String> attributes = getAttributes(feedRecords.getLeft(), fRecords, "OpportunityType");
+		String value = getListValueOrMultiple(attributes);
+		if (value != null) {
+			String val = value.toLowerCase();
+			if (val.contains("renewal") || val.contains("migration") || val.contains("customer")) {
+				return Pair.of("Excluded from SFDC", "Type " + value);					
+			} 
+		}
+		return null;
+	}
+
+	private Pair<String, String> checkCustomerTrial(CombinedRow item, List<CSVRecord> aRecords, List<CSVRecord> sRecords, List<CSVRecord> fRecords) {
+		List<String> attributes = getAttributes(feedRecords.getLeft(), fRecords, "Source");
+		String value = getListValueOrMultiple(attributes);
+		if ("Customer Trial".equals(value)) {
+			return Pair.of("Excluded from SFDC", "Source is Customer Trial");					
+		}
 		return null;
 	}
 
@@ -249,7 +274,6 @@ public class ResultPayload {
 				return Pair.of("Timing Issue", "Trial Start out of Range in SFDC");					
 			}
 		}
-		
 		return null;
 	}
 
