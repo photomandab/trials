@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
@@ -28,7 +29,9 @@ import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Font;
 import org.apache.poi.ss.usermodel.Row;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import com.opencsv.CSVWriter;
 
 public class CompUtils {
@@ -150,19 +153,11 @@ public class CompUtils {
 
 	public static String writeSqlWhereClause(String product, List<Set<String>> list) {
 		StringBuilder buffy = new StringBuilder();
-		boolean first = true;
+		Set<String> uniqueLeads = Sets.newHashSet();
 		for (int i = 0; i < list.size(); i++) {
-			Set<String> tenants = list.get(i);
-			if (tenants.size() > 0) {
-				if (first) {
-					buffy.append("and");
-					first = false;
-				} else {
-					buffy.append(" or");
-				}
-				buffy.append(" l.lead_id in ").append(CompUtils.generateAmarilloString(product, tenants)).append(NL);
-			}
+			uniqueLeads.addAll(list.get(i));
 		}
+		buffy.append("and l.lead_id in ").append(CompUtils.generateAmarilloString(product, uniqueLeads));
 		return buffy.toString();
 	}
 
@@ -174,6 +169,7 @@ public class CompUtils {
 	}
 
 	public static void writeExcelFile(File file, ResultPayload... payloads) {
+		System.out.println("Writing Excel result file...");
 		HSSFWorkbook wb = new HSSFWorkbook();
 		Font defaultFont = wb.getFontAt((short)0);
 		defaultFont.setFontName("Arial");
@@ -312,6 +308,33 @@ public class CompUtils {
 			}
 		}
 		return parsed;
+	}
+
+	public static File fixCSVAnomalies(File f, String... replaceStrings) throws IOException {
+		List<String> lines = FileUtils.readLines(f, ENCODING_UTF_8);
+		List<String> baseStrs = Lists.newArrayList(replaceStrings);
+		for (int i = 0; i < lines.size(); i++) {
+			String text = lines.get(i);
+			boolean lineModified = false;
+			List<String> strs = Lists.newArrayList(baseStrs);
+			while (strs.size() > 0) {
+				String string1 = strs.remove(0);
+				String string2 = strs.remove(0);
+				if (text.indexOf(string1) != -1) {
+					text = text.replace(string1, string2);
+					lineModified = true;
+				}
+			}
+			if (lineModified) {
+				lines.set(i, text);
+			}
+		}
+		String filename = f.getName();
+		int dotIndex = filename.indexOf(".");
+		String updatedFileName = filename.substring(0, dotIndex) + "_x" + filename.substring(dotIndex);
+		File updatedFile = new File(f.getParentFile(), updatedFileName);
+		FileUtils.writeLines(updatedFile, ENCODING_UTF_8, lines);
+		return updatedFile;
 	}
 
 }

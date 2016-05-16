@@ -89,6 +89,7 @@ public class ReportComparator {
 		Pair<String[], List<CSVRecord>> sfdcAllRecords = readCSVFile(null, sfdcFile);
 		result.setSfdcAllRecords(sfdcAllRecords);
 
+		feedFile = CompUtils.fixCSVAnomalies(feedFile, "\\\"", "\"");
 		Pair<String[], List<CSVRecord>> feedRecords = readCSVFile(null, feedFile);
 		result.setFeedRecords(feedRecords);
 
@@ -219,6 +220,7 @@ public class ReportComparator {
 		System.out.println(MessageFormat.format("SFDC Only:\n{0}", new Object[] { CompUtils.getDBString(onlySFDCValid) }));
 		System.out.println(MessageFormat.format("Mismatch:\n{0}", new Object[] { CompUtils.getDBString(mismatchValidity) }));
 		
+		System.out.println();
 		System.out.println("SQL:");
 		System.out.println(CompUtils.writeSqlWhereClause(product, CompUtils.newList(inAmarilloOnly, inSFDCOnly, dupesInSFDC, onlyAmarilloValid, onlySFDCValid, mismatchValidity)));
 
