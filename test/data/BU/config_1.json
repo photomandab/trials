@@ -5,7 +5,7 @@
 	"tenant" : "Tenant ID",
 	"product" : "Fixed Product",
 	"shortProduct" : "BU",
-	"cols" : [ "Lead Id","Fixed Product","Name","Date","Valid Leads","LN Attribution Group","GA Medium","GA Source","LN Medium","LN Source","RM Company Type","RM Internal Distributor","Duplicate","Marketing Territory","Adv","Loc","GA Client ID","LN Lead Source","GA Tracked","Distributor Name","Tenant ID","Controlnow Migrated Tenant Id","Opportunity Type","Signup URL","Opportunity Stage","ADV Campaign Type","ADV Campaign Name","ADV Description","PPC Campaign Name","PPC Account Name","Backup Created By Parent" ],
+	"cols" : [ "Lead Id","Fixed Product","Name","Date","Valid Leads","LN Attribution Group","GA Medium","GA Source","LN Medium","LN Source","RM Company Type","RM Internal Distributor","Duplicate","Marketing Territory","SFDC Region","SFDC Sub-Region","SFDC Lead Territory","Adv","Loc","GA Client ID","LN Lead Source","GA Tracked","Distributor Name","Tenant ID","Controlnow Migrated Tenant Id","Opportunity Type","Signup URL","Opportunity Stage","ADV Campaign Type","ADV Campaign Name","ADV Description","PPC Campaign Name","PPC Account Name","Backup Created By Parent" ],
 	"coltypes" : { 
 		"Valid Leads" : "integer", 
 		"RM Internal Distributor" : "integer",
@@ -30,7 +30,7 @@
 		"Is Valid" : "integer"
 	 },
 	"filters" : {
-		"include" : [ [ "Core Product", "=", "3 - Backup" ], [ "Group", "=", "1 - North America" ] ],
+		"include" : [ [ "Core Product", "=", "3 - Backup" ], [ "Group", "=", "01 - North America" ] ],
 		"exclude" : [ [ "Tenant MAXBU", "=", "" ] ]
 	}
 } 

@@ -321,13 +321,13 @@ public class ResultPayload {
 		fProduct = mappedProduct(fProduct);
 		
 		if (item.isInBoth() && !CompUtils.isBlank(aProduct) && !aProduct.equals(mappedProduct(sProduct))) {
-			return Pair.of("Product Change", aProduct + " in Amarillo, " + sProduct + " in SFDC");
+			return Pair.of("Product Change", "1:" + aProduct + " in Amarillo, " + sProduct + " in SFDC");
 		} else if (item.isInAmarilloOnly() && !CompUtils.isBlank(sProduct) && !CompUtils.isBlank(aProduct) && !aProduct.equals(sProduct)) {
-			return Pair.of("Product Change", aProduct + " in Amarillo, " + fProduct + " in SFDC");
+			return Pair.of("Product Change", "2:" + aProduct + " in Amarillo, " + fProduct + " in SFDC");
 		} else if (item.isInAmarilloOnly() && !CompUtils.isBlank(fProduct) && !CompUtils.isBlank(aProduct) && !aProduct.equals(fProduct)) {
-			return Pair.of("Product Change", aProduct + " in Amarillo, " + fProduct + " in SFDC Feed");
+			return Pair.of("Product Change", "3:" + aProduct + " in Amarillo, " + fProduct + " in SFDC Feed");
 		} else if (item.isInSFDCOnly() && !CompUtils.isBlank(sProduct) && !CompUtils.isBlank(aProduct) && !sProduct.equals(aProduct)) {
-			return Pair.of("Product Change", aProduct + " in Amarillo, " + sProduct + " in SFDC");
+			return Pair.of("Product Change", "4:" + aProduct + " in Amarillo, " + sProduct + " in SFDC");
 		}
 		
 		return null;
@@ -336,7 +336,7 @@ public class ResultPayload {
 	private Pair<String, String> checkTerritoryChange(CombinedRow item, List<CSVRecord> aRecords, List<CSVRecord> sRecords, List<CSVRecord> fRecords) {
 		List<String> aRegions = getAttributes(amarilloAllRecords.getLeft(), aRecords, "Marketing Territory");
 		List<String> sRegions = getAttributes(sfdcAllRecords.getLeft(), sRecords, "Group");
-		List<String> fRegions = getAttributes(feedRecords.getLeft(), fRecords, "Territory___Lead");
+		List<String> fRegions = getAttributes(feedRecords.getLeft(), fRecords, "Sub-Region");
 		
 		String aRegion = aRegions != null && aRegions.size() > 0 ? getListValueOrMultiple(aRegions) : null;		
 		String sRegion = sRegions != null && sRegions.size() > 0 ? getListValueOrMultiple(sRegions) : null;
@@ -347,13 +347,13 @@ public class ResultPayload {
 		fRegion = mappedRegion(fRegion);
 		
 		if (item.isInBoth() && sRegion != null && !CompUtils.isBlank(aRegion) && !aRegion.equals(sRegion)) {
-			return Pair.of("Territory Change", aRegion + " in Amarillo, " + sRegion + " in SFDC");
+			return Pair.of("Territory Change", "1:" + aRegion + " in Amarillo, " + sRegion + " in SFDC");
 		} else if (item.isInAmarilloOnly() && sRegion != null && aRegion != null && !aRegion.equals(sRegion)) {
-			return Pair.of("Territory Change", aRegion + " in Amarillo, " + sRegion + " in SFDC");
+			return Pair.of("Territory Change", "2:" + aRegion + " in Amarillo, " + sRegion + " in SFDC");
 		} else if (item.isInAmarilloOnly() && fRegion != null && aRegion != null && !aRegion.equals(fRegion)) {
-			return Pair.of("Territory Change", aRegion + " in Amarillo, " + fRegion + " in SFDC Feed");
+			return Pair.of("Territory Change", "3:" + aRegion + " in Amarillo, " + fRegion + " in SFDC Feed");
 		} else if (item.isInSFDCOnly() && sRegion != null && aRegion != null && !aRegion.equals(sRegion)) {
-			return Pair.of("Territory Change", aRegion + " in Amarillo, " + sRegion + " in SFDC");
+			return Pair.of("Territory Change", "4:" + aRegion + " in Amarillo, " + sRegion + " in SFDC");
 		}
 		
 		return null;
@@ -382,7 +382,9 @@ public class ResultPayload {
 	
 	private String mappedRegion(String region) {
 		if ("1 - North America".equals(region)) return "NAM";
+		if ("01 - North America".equals(region)) return "NAM";
 		if ("2 - LATAM".equals(region)) return "LATAM";
+		if ("02 - LATAM".equals(region)) return "LATAM";
 		if (region != null && region.contains("LATAM")) return "LATAM";
 		if (region != null && region.startsWith("US")) return "NAM";
 		return region;
@@ -418,14 +420,14 @@ public class ResultPayload {
 		int rownum = 0;
 		
 		// Overview
-		rownum = addHeaderRow(sheet, rownum, product + " Trial Count Breakdown");
+		rownum = addHeaderRow(sheet, rownum, product + " Trial Count");
 		rownum = addDataRow(sheet, rownum, "Total", new Object[] { totalSize, "100%" });
 		rownum = addDataRow(sheet, rownum, "In Both", new Object[] { bothSize, CompUtils.toPercentage(bothSize, totalSize) });
 		rownum = addDataRow(sheet, rownum, "In Amarillo Only", new Object[] { onlyAmarilloSize, CompUtils.toPercentage(onlyAmarilloSize, totalSize) });
 		rownum = addDataRow(sheet, rownum, "In SFDC Only", new Object[] { onlySFDCSize, CompUtils.toPercentage(onlySFDCSize, totalSize) });
 		rownum = addDataRow(sheet, rownum, "Dupes in SFDC", new Object[] { dupesSize, CompUtils.toPercentage(dupesSize, totalSize) });
 		rownum = addBlankRow(sheet, rownum);
-		rownum = addHeaderRow(sheet, rownum, product + " Trial Validity Breakdown");
+		rownum = addHeaderRow(sheet, rownum, product + " Trial Validity");
 		rownum = addDataRow(sheet, rownum, "Total", new Object[] { totalSize, "100%" });
 		rownum = addDataRow(sheet, rownum, "Total Valid", new Object[] { totalValidLeads, CompUtils.toPercentage(totalValidLeads, totalSize) });
 		rownum = addDataRow(sheet, rownum, "Both", new Object[] { bothValidSize, CompUtils.toPercentage(bothValidSize, totalSize) });
