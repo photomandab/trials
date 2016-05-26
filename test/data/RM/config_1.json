@@ -16,7 +16,7 @@
 	 },
 	"filters" : {
 		"include" : [ [ "Fixed Product", "=", "RM" ], [ "RM Internal Distributor", "=", "1" ], [ "Marketing Territory", "=", "NAM" ] ],
-		"exclude" : [ [ "LN Attribution Group", "=", "Employee Testing" ], [ "RM Company Type", "=", "Direct" ], [ "Duplicate", "=", "1" ], [ "Opportunity Type", "=", "Migration Customer" ] ]
+		"exclude" : [ [ "LN Attribution Group", "=", "Employee Testing" ], [ "LN Attribution Group", "=", "Existing Customer" ], [ "RM Company Type", "=", "Direct" ], [ "Duplicate", "=", "1" ], [ "Opportunity Type", "=", "Migration Customer" ] ]
 	}
 },
 "right" : { 

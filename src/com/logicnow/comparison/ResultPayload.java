@@ -323,7 +323,7 @@ public class ResultPayload {
 		if (item.isInBoth() && !CompUtils.isBlank(aProduct) && !aProduct.equals(mappedProduct(sProduct))) {
 			return Pair.of("Product Change", "1:" + aProduct + " in Amarillo, " + sProduct + " in SFDC");
 		} else if (item.isInAmarilloOnly() && !CompUtils.isBlank(sProduct) && !CompUtils.isBlank(aProduct) && !aProduct.equals(sProduct)) {
-			return Pair.of("Product Change", "2:" + aProduct + " in Amarillo, " + fProduct + " in SFDC");
+			return Pair.of("Product Change", "2:" + aProduct + " in Amarillo, " + sProduct + " in SFDC");
 		} else if (item.isInAmarilloOnly() && !CompUtils.isBlank(fProduct) && !CompUtils.isBlank(aProduct) && !aProduct.equals(fProduct)) {
 			return Pair.of("Product Change", "3:" + aProduct + " in Amarillo, " + fProduct + " in SFDC Feed");
 		} else if (item.isInSFDCOnly() && !CompUtils.isBlank(sProduct) && !CompUtils.isBlank(aProduct) && !sProduct.equals(aProduct)) {
