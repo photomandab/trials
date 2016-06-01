@@ -19,8 +19,6 @@ import com.logicnow.comparison.ReportComparator.CombinedRow;
 
 public class ResultPayload {
 
-	private static final String MULTIPLE = "(Multiple)";
-
 	private String product;
 
 	private Map<String, List<CSVRecord>> amarilloMap;
@@ -244,7 +242,7 @@ public class ResultPayload {
 
 	private Pair<String, String> checkOpportunityType(CombinedRow item, List<CSVRecord> aRecords, List<CSVRecord> sRecords, List<CSVRecord> fRecords) {
 		List<String> attributes = getAttributes(feedRecords.getLeft(), fRecords, "OpportunityType");
-		String value = getListValueOrMultiple(attributes);
+		String value = CompUtils.getListValueOrMultiple(attributes);
 		if (value != null) {
 			String val = value.toLowerCase();
 			if (val.contains("renewal") || val.contains("migration") || val.contains("customer")) {
@@ -256,7 +254,7 @@ public class ResultPayload {
 
 	private Pair<String, String> checkCustomerTrial(CombinedRow item, List<CSVRecord> aRecords, List<CSVRecord> sRecords, List<CSVRecord> fRecords) {
 		List<String> attributes = getAttributes(feedRecords.getLeft(), fRecords, "Source");
-		String value = getListValueOrMultiple(attributes);
+		String value = CompUtils.getListValueOrMultiple(attributes);
 		if ("Customer Trial".equals(value)) {
 			return Pair.of("Excluded from SFDC", "Source is Customer Trial");					
 		}
@@ -267,8 +265,8 @@ public class ResultPayload {
 		Date start = getStartDate();
 		Date end = getEndDate();
 		List<String> attributes = getAttributes(feedRecords.getLeft(), fRecords, "Trial_Start");
-		String value = getListValueOrMultiple(attributes);
-		Date trialStart = (value != null && !MULTIPLE.equals(value)) ? parseDate(value) : null;
+		String value = CompUtils.getListValueOrMultiple(attributes);
+		Date trialStart = (value != null && !CompUtils.MULTIPLE.equals(value)) ? parseDate(value) : null;
 		if (trialStart != null) {
 			if (trialStart.before(start) || trialStart.after(end)) {
 				return Pair.of("Timing Issue", "Trial Start out of Range in SFDC");					
@@ -280,8 +278,8 @@ public class ResultPayload {
 	private Pair<String, String> checkSFDCDupesVaryingValidity(CombinedRow item, List<CSVRecord> aRecords, List<CSVRecord> sRecords, List<CSVRecord> fRecords) {
 		if (sfdcDupes.contains(item.tenantId)) {
 			List<String> attributes = getAttributes(sfdcAllRecords.getLeft(), sRecords, "Is Valid");
-			String value = getListValueOrMultiple(attributes);
-			if (MULTIPLE.equals(value)) {
+			String value = CompUtils.getListValueOrMultiple(attributes);
+			if (CompUtils.MULTIPLE.equals(value)) {
 				return Pair.of("Multiple entry in SFDC", "Different validity values");
 			}
 		}
@@ -290,7 +288,7 @@ public class ResultPayload {
 
 	private Pair<String, String> checkEmployeeTesting(CombinedRow item, List<CSVRecord> aRecords, List<CSVRecord> sRecords, List<CSVRecord> fRecords) {
 		List<String> attribution = getAttributes(amarilloAllRecords.getLeft(), aRecords, "LN Attribution Group");
-		String value = getListValueOrMultiple(attribution);
+		String value = CompUtils.getListValueOrMultiple(attribution);
 		if ("Employee Testing".equals(value)) {
 			return Pair.of("Employee Testing", "Amarillo identifies as Test Trial");
 		}
@@ -312,15 +310,15 @@ public class ResultPayload {
 		List<String> sProducts = getAttributes(sfdcAllRecords.getLeft(), sRecords, "Core Product");
 		List<String> fProducts = getAttributes(feedRecords.getLeft(), fRecords, "Product");
 		
-		String aProduct = !CompUtils.isEmpty(aProducts) ? getListValueOrMultiple(aProducts) : null;		
-		String sProduct = !CompUtils.isEmpty(sProducts) ? getListValueOrMultiple(sProducts) : null;
-		String fProduct = !CompUtils.isEmpty(fProducts) ? getListValueOrMultiple(fProducts) : null;
+		String aProduct = !CompUtils.isEmpty(aProducts) ? CompUtils.getListValueOrMultiple(aProducts) : null;		
+		String sProduct = !CompUtils.isEmpty(sProducts) ? CompUtils.getListValueOrMultiple(sProducts) : null;
+		String fProduct = !CompUtils.isEmpty(fProducts) ? CompUtils.getListValueOrMultiple(fProducts) : null;
 		
-		aProduct = mappedProduct(aProduct);
-		sProduct = mappedProduct(sProduct);
-		fProduct = mappedProduct(fProduct);
+		aProduct = CompUtils.mappedProduct(aProduct);
+		sProduct = CompUtils.mappedProduct(sProduct);
+		fProduct = CompUtils.mappedProduct(fProduct);
 		
-		if (item.isInBoth() && !CompUtils.isBlank(aProduct) && !aProduct.equals(mappedProduct(sProduct))) {
+		if (item.isInBoth() && !CompUtils.isBlank(aProduct) && !aProduct.equals(sProduct)) {
 			return Pair.of("Product Change", "1:" + aProduct + " in Amarillo, " + sProduct + " in SFDC");
 		} else if (item.isInAmarilloOnly() && !CompUtils.isBlank(sProduct) && !CompUtils.isBlank(aProduct) && !aProduct.equals(sProduct)) {
 			return Pair.of("Product Change", "2:" + aProduct + " in Amarillo, " + sProduct + " in SFDC");
@@ -338,13 +336,13 @@ public class ResultPayload {
 		List<String> sRegions = getAttributes(sfdcAllRecords.getLeft(), sRecords, "Group");
 		List<String> fRegions = getAttributes(feedRecords.getLeft(), fRecords, "Sub-Region");
 		
-		String aRegion = aRegions != null && aRegions.size() > 0 ? getListValueOrMultiple(aRegions) : null;		
-		String sRegion = sRegions != null && sRegions.size() > 0 ? getListValueOrMultiple(sRegions) : null;
-		String fRegion = fRegions != null && fRegions.size() > 0 ? getListValueOrMultiple(fRegions) : null;
+		String aRegion = aRegions != null && aRegions.size() > 0 ? CompUtils.getListValueOrMultiple(aRegions) : null;		
+		String sRegion = sRegions != null && sRegions.size() > 0 ? CompUtils.getListValueOrMultiple(sRegions) : null;
+		String fRegion = fRegions != null && fRegions.size() > 0 ? CompUtils.getListValueOrMultiple(fRegions) : null;
 		
-		aRegion = mappedRegion(aRegion);
-		sRegion = mappedRegion(sRegion);
-		fRegion = mappedRegion(fRegion);
+		aRegion = CompUtils.mappedRegion(aRegion);
+		sRegion = CompUtils.mappedRegion(sRegion);
+		fRegion = CompUtils.mappedRegion(fRegion);
 		
 		if (item.isInBoth() && sRegion != null && !CompUtils.isBlank(aRegion) && !aRegion.equals(sRegion)) {
 			return Pair.of("Territory Change", "1:" + aRegion + " in Amarillo, " + sRegion + " in SFDC");
@@ -357,37 +355,6 @@ public class ResultPayload {
 		}
 		
 		return null;
-	}
-
-	private String getListValueOrMultiple(List<String> items) {
-		if (items.size() == 1) return items.get(0);
-		if (items.size() > 1) {
-			Set<String> set = Sets.newHashSet(items);
-			if (set.size() == 1) return items.get(0);	
-			else return MULTIPLE;
-		}
-		return null;
-	}
-
-	private String mappedProduct(String p) {
-		if ("1 - RM".equals(p)) return "RM";
-		if ("3 - Backup".equals(p)) return "BU";
-		if ("6 - ControlNow / MAX IT".equals(p)) return "RM(IT)";
-		if ("LN - MAX RM".equals(p)) return "RM";
-		if ("LN - MAX Backup".equals(p)) return "BU";
-		if ("LN - ControlNow".equals(p)) return "RM(IT)";
-		if ("LN - MAXIT".equals(p)) return "RM(IT)";
-		return p;
-	}
-	
-	private String mappedRegion(String region) {
-		if ("1 - North America".equals(region)) return "NAM";
-		if ("01 - North America".equals(region)) return "NAM";
-		if ("2 - LATAM".equals(region)) return "LATAM";
-		if ("02 - LATAM".equals(region)) return "LATAM";
-		if (region != null && region.contains("LATAM")) return "LATAM";
-		if (region != null && region.startsWith("US")) return "NAM";
-		return region;
 	}
 
 	private List<String> getAttributes(String[] headers, List<CSVRecord> records, String attributeName) {

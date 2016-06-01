@@ -13,6 +13,7 @@ import java.text.MessageFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -36,7 +37,6 @@ import com.opencsv.CSVWriter;
 
 public class CompUtils {
 
-	private static int MIN_WIDTH = 3000;
 	public static final String ENCODING_UTF_8 = "UTF-8";
 	public static final SimpleDateFormat DATE_FORMAT_1 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSSSSSS");
 	public static final SimpleDateFormat DATE_FORMAT_2 = new SimpleDateFormat("yyyy-MM-dd"); 
@@ -50,6 +50,29 @@ public class CompUtils {
 		"Both Valid", "Neither Valid", "Valid Amarillo Only", "Valid SFDC Only", "Mismatch", 
 		"Dupe in SFDC", "Reason", "Details" };
 
+	public static final String MULTIPLE = "(Multiple)";
+	
+	private static int MIN_WIDTH = 3000;
+	
+	public static String getMonthStartDate() {
+		Calendar c = Calendar.getInstance();
+		c.set(Calendar.HOUR, 0);
+		c.set(Calendar.MINUTE, 0);
+		c.set(Calendar.SECOND, 0);
+    	c.add(Calendar.DATE, 1);
+    	return DATE_FORMAT_2.format(c.getTime());
+	}
+
+
+	public static String getYesterdaysDate() {
+		Calendar c = Calendar.getInstance();
+		c.set(Calendar.HOUR, 0);
+		c.set(Calendar.MINUTE, 0);
+		c.set(Calendar.SECOND, 0);
+    	c.add(Calendar.DATE, -1);
+    	return DATE_FORMAT_2.format(c.getTime());
+	}
+	
 	public static String readFileAsText(File f) throws IOException {
 		BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(f), ENCODING_UTF_8));
 		try { return readAsText(reader); } finally { reader.close(); }
@@ -68,6 +91,8 @@ public class CompUtils {
 			}
 		} else if ("BU".equals(product)) {
 			id = "backup:" + tenant;
+		} else if ("MM".equals(product) || "MM(IT)".equals(product)) {
+			id = tenant;
 		}
 		return id;
 	}
@@ -157,7 +182,12 @@ public class CompUtils {
 		for (int i = 0; i < list.size(); i++) {
 			uniqueLeads.addAll(list.get(i));
 		}
-		buffy.append("and l.lead_id in ").append(CompUtils.generateAmarilloString(product, uniqueLeads));
+		if ("MM".equals(product) || "MM(IT)".equals(product)) {
+			buffy.append("and tenant_id.value in ");			
+		} else {
+			buffy.append("and l.lead_id in ");			
+		}
+		buffy.append(CompUtils.generateAmarilloString(product, uniqueLeads));
 		return buffy.toString();
 	}
 
@@ -336,5 +366,44 @@ public class CompUtils {
 		FileUtils.writeLines(updatedFile, ENCODING_UTF_8, lines);
 		return updatedFile;
 	}
+
+	public static String getListValueOrMultiple(List<String> items) {
+		if (items.size() == 1) return items.get(0);
+		if (items.size() > 1) {
+			Set<String> set = Sets.newHashSet(items);
+			if (set.size() == 1) return items.get(0);	
+			else return MULTIPLE;
+		}
+		return null;
+	}
+
+	public static String mappedProduct(String p) {
+		if ("RM".equals(p)) return "RM";
+		if ("RM(IT)".equals(p)) return "RM(IT)";
+		if ("1 - RM".equals(p)) return "RM";
+		if ("3 - Backup".equals(p)) return "BU";
+		if ("6 - ControlNow / MAX IT".equals(p)) return "RM(IT)";
+		if ("4 - MAX Mail".equals(p)) return "MM";
+		if ("5 - MAX Mail IT".equals(p)) return "MM(IT)";
+		if ("LN - MAX RM".equals(p)) return "RM";
+		if ("LN - MAX Backup".equals(p)) return "BU";
+		if ("LN - ControlNow".equals(p)) return "RM(IT)";
+		if ("LN - MAXIT".equals(p)) return "RM(IT)";
+		if ("LN - MAX Mail".equals(p)) return "MM";
+		if ("LN - MAX Mail IT".equals(p)) return "MM(IT)";
+		return p;
+	}
+	
+	public static String mappedRegion(String region) {
+		if ("NAM".equals(region)) return "NAM";
+		if ("1 - North America".equals(region)) return "NAM";
+		if ("01 - North America".equals(region)) return "NAM";
+		if ("2 - LATAM".equals(region)) return "LATAM";
+		if ("02 - LATAM".equals(region)) return "LATAM";
+		if (region != null && region.contains("LATAM")) return "LATAM";
+		if (region != null && region.startsWith("US")) return "NAM";
+		return region;
+	}
+
 
 }
