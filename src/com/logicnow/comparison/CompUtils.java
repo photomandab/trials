@@ -239,7 +239,7 @@ public class CompUtils {
 			FileOutputStream out = new FileOutputStream(file);
 			wb.write(out);
 			out.close();
-			System.out.println("Excel file written successfully");
+			System.out.println("Excel file written successfully\n");
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
@@ -507,6 +507,21 @@ public class CompUtils {
 			return reason;
 		} else if ((reason = checkOpportunityType(payload, item, aRecords, sRecords, fRecords)) != null) {
 			return reason;
+		} else if ((reason = checkMissingTrialStart(payload, item, aRecords, sRecords, fRecords)) != null) {
+			return reason;
+		}
+		
+		return null;
+	}
+
+	private static Pair<String, String> checkMissingTrialStart(ResultPayload payload, CombinedRow item, List<CSVRecord> aRecords, List<CSVRecord> sRecords, List<CSVRecord> fRecords) {
+		List<String> present = getAttributes(payload.getSfdcAllRecords().getLeft(), sRecords, "Trial Start");
+		if (present == null || present.size() == 0) {
+			List<String> attributes = getAttributes(payload.getFeedRecords().getLeft(), fRecords, "Trial_Start");
+			String value = CompUtils.getListValueOrMultiple(attributes);
+			if (CompUtils.isBlank(value)) {
+				return Pair.of("No Trial Start Date", "");					
+			}
 		}
 		
 		return null;
@@ -726,6 +741,14 @@ public class CompUtils {
 
 	public void addFilteredSFDCData(HSSFWorkbook wb, HSSFSheet sheet, ResultPayload payload) {		
 		CompUtils.addRecordsToSheet(wb, sheet, payload.getSfdcRecords(), payload.getConfigs().getRight());
+	}
+
+	public static String generateCommentedSQL(ResultPayload... payloads) {
+		StringBuilder buffy = new StringBuilder();
+		for (ResultPayload p : payloads) {
+			buffy.append("-- ").append(p.getProduct()).append(" ").append(p.getSqlWhereClause()).append(NL);
+		}
+		return buffy.toString();
 	}
 
 }
