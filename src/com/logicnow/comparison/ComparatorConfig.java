@@ -21,6 +21,9 @@ public class ComparatorConfig {
 	private static final String FILTERS = "filters";
 	private static final String INCLUDE = "include";
 	private static final String EXCLUDE = "exclude";
+	
+	private String startDate;
+	private String endDate;
 
 	private JsonObject config;
 	
@@ -116,5 +119,11 @@ public class ComparatorConfig {
 		}
 		return items;
 	}
+
+	public String getStartDate() { return startDate; }
+	public void setStartDate(String startDate) { this.startDate = startDate; }
+
+	public String getEndDate() { return endDate; }
+	public void setEndDate(String endDate) { this.endDate = endDate; }
 	
 }

@@ -30,8 +30,6 @@ import com.opencsv.CSVReader;
 
 public class ReportComparator {
 	
-	private static final String PARAM_LEFT = "left";
-	private static final String PARAM_RIGHT = "right";
 	private static final String GENERATED_TENANT = "Generated Tenant";
 	private static final String TENANTID = "TenantID";
 	
@@ -70,8 +68,11 @@ public class ReportComparator {
 		jsonReader.close();
 		
 		// Create configuration objects
-		ComparatorConfig leftConfig = new ComparatorConfig(configs.getJsonObject(PARAM_LEFT));
-		ComparatorConfig rightConfig = new ComparatorConfig(configs.getJsonObject(PARAM_RIGHT));
+		ComparatorConfig leftConfig = new ComparatorConfig(configs.getJsonObject(CompUtils.PARAM_LEFT));
+		ComparatorConfig rightConfig = new ComparatorConfig(configs.getJsonObject(CompUtils.PARAM_RIGHT));
+
+		CompUtils.addDatesToConfig(leftConfig, startDate, endDate);
+		CompUtils.addDatesToConfig(rightConfig, startDate, endDate);
 		
 		result.setConfig(Pair.of(leftConfig,  rightConfig));
 
@@ -321,123 +322,9 @@ public class ReportComparator {
 		    }
 		}
 		System.out.println(MessageFormat.format("{0} rows read from [{1}]", new Object[] { records.size(), key }));
-    	return filterColumns(config, headerItems, records);
+    	return CompUtils.filterColumns(config, headerItems, records);
 	}
 
-	private Pair<String[], List<CSVRecord>> filterColumns(ComparatorConfig config, String[] header, List<CSVRecord> recs) {
-		// No configuration supplied so we are not filtering
-		if (config == null) {
-			return Pair.of(header, recs);
-		}
-		// Establish indexes of required columns
-		String[] columnsToInclude = config.getColumns();
-		List<Integer> indexes = Lists.newArrayList();
-		if (columnsToInclude != null && columnsToInclude.length < header.length) {
-			for (String h : columnsToInclude) {
-				int index = ArrayUtils.indexOf(header, h);
-				if (index != -1) {
-					indexes.add(index);
-				}
-			}
-		}
-		// filter header row
-		List<String> filteredHeader = Lists.newArrayList();
-		for (int i : indexes) {
-			filteredHeader.add(header[i]);
-		}
-		// 
-		String[] filteredHeaders = (String[])filteredHeader.toArray(new String[filteredHeader.size()]);
-		// filter records by columns
-		List<CSVRecord> records  = filterRecordsByIndexes(recs, indexes);
-		// filter records by inclusion
-		records = filterRecords(filteredHeaders, records, config.getIncludeFilters(), true);		
-		// filter records by exclusion
-		records = filterRecords(filteredHeaders, records, config.getExcludeFilters(), false);
-		// return updated records
-		return Pair.of(filteredHeaders, records);
-	}
-
-	private List<CSVRecord> filterRecords(String[] headers, List<CSVRecord> records, List<String[]> filters, boolean include) {
-		if (filters == null || filters.size() == 0) return records;
-		
-		List<CSVRecord> filtered = Lists.newArrayList();
-		for (CSVRecord r : records) {
-			if (include) {
-				boolean matched = allFiltersMatch(headers, filters, r);
-				if (matched) filtered.add(r);
-			} else {
-				boolean matched = anyFiltersMatch(headers, filters, r);
-				if (!matched) filtered.add(r);
-			}
-		}
-		return filtered;
-	}
-
-	private boolean anyFiltersMatch(String[] headers, List<String[]> filters, CSVRecord r) {
-		Map<String, String> map = r.toMap(headers, null);
-		for (String[] f : filters) {
-			String column = f[0];
-			String operand = f[1];
-			String expected = f[2];
-			String actual = map.get(column);
-			if ("=".equals(operand)) {
-				if (actual.equals(expected)) {
-					return true;
-				}
-			} else if ("startsWith".equals(operand)) {
-				if (actual.startsWith(expected)) {
-					return true;
-				}
-			} else if ("endsWith".equals(operand)) {
-				if (actual.endsWith(expected)) {
-					return true;
-				}
-			}
-		}
-		return false;		
-	}
-
-	private boolean allFiltersMatch(String[] headers, List<String[]> filters, CSVRecord r) {
-		Map<String, String> map = r.toMap(headers, null);
-		for (String[] f : filters) {
-			String column = f[0];
-			String operand = f[1];
-			String expected = f[2];
-			String actual = map.get(column);
-			if ("=".equals(operand)) {
-				if (!actual.equals(expected)) {
-					return false;
-				}
-			} else if ("startsWith".equals(operand)) {
-				if (!actual.startsWith(expected)) {
-					return false;
-				}
-			} else if ("endsWith".equals(operand)) {
-				if (!actual.endsWith(expected)) {
-					return false;
-				}
-			}
-		}
-		return true;
-	}
-
-	private List<CSVRecord> filterRecordsByIndexes(List<CSVRecord> recs, List<Integer> indexes) {
-		List<CSVRecord> filtered = Lists.newArrayList();
-		for (CSVRecord r : recs) {
-			filtered.add(filterRecord(r, indexes));
-		}
-		return filtered;
-	}
-
-	private CSVRecord filterRecord(CSVRecord r, List<Integer> indexes) {
-		List<String> itemList = Lists.newArrayList(r.items);
-		List<String> filteredItems = Lists.newArrayList();
-		for (int i : indexes) {
-			filteredItems.add(itemList.get(i));
-		}
-		return new CSVRecord(filteredItems.toArray(new String[filteredItems.size()]));
-	}
-	
 	public static class CombinedRow {
 		public String tenantId = "";
 		public String leadId = "";

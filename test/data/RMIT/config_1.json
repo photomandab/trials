@@ -16,7 +16,8 @@
 	 },
 	"filters" : {
 		"include" : [ [ "Fixed Product", "=", "RM(IT)" ], [ "RM Company Type", "=", "Direct" ], [ "RM Internal Distributor", "=", "1" ], [ "Marketing Territory", "=", "NAM" ] ],
-		"exclude" : [ [ "LN Attribution Group", "=", "Employee Testing" ], [ "LN Attribution Group", "=", "Existing Customer" ], [ "Duplicate", "=", "1" ], [ "Opportunity Type", "=", "Migration Customer" ]]
+		"exclude" : [ [ "LN Attribution Group", "=", "Employee Testing" ], [ "LN Attribution Group", "=", "Existing Customer" ], 
+				      [ "Duplicate", "=", "1" ], [ "Opportunity Type", "=", "Migration Customer" ]]
 	}
 },
 "right" : { 
@@ -25,13 +26,13 @@
 	"tenant" : "Tenant MAXRM",
 	"product" : "Core Product",
 	"shortProduct" : "RM(IT)",
-	"cols" : [ "Is Valid", "Distributor Name", "Opportunity Name", "Tenant MAXRM", "Core Product", "Group", "Trial Start" ],
+	"cols" : [ "Is Valid", "Distributor Name", "Opportunity Name", "Tenant MAXRM", "Core Product", "Group", "Trial Start", "Created Date", "Close Date" ],
 	"coltypes" : { 
 		"Is Valid" : "integer"
 	 },
 	"filters" : {
 		"include" : [ [ "Core Product", "=", "6 - ControlNow / MAX IT" ], [ "Group", "=", "01 - North America" ] ],
-		"exclude" : [ [ "Tenant MAXRM", "=", "" ] ]
+		"exclude" : [ [ "Tenant MAXRM", "=", "" ], [ "Close Date", "<", "$START_DATE" ] ]
 	}
 } 
 }

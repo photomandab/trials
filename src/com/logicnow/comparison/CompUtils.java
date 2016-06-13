@@ -39,7 +39,11 @@ import com.opencsv.CSVWriter;
 
 public class CompUtils {
 
+	public static final String PARAM_LEFT = "left";
+	public static final String PARAM_RIGHT = "right";
+
 	public static final String ENCODING_UTF_8 = "UTF-8";
+	
 	public static final SimpleDateFormat DATE_FORMAT_1 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSSSSSS");
 	public static final SimpleDateFormat DATE_FORMAT_2 = new SimpleDateFormat("yyyy-MM-dd"); 
 	public static final SimpleDateFormat DATE_FORMAT_3 = new SimpleDateFormat("MM/dd/yyyy");
@@ -55,6 +59,178 @@ public class CompUtils {
 	public static final String MULTIPLE = "(Multiple)";
 	
 	private static int MIN_WIDTH = 3000;
+	
+	public static void addDatesToConfig(ComparatorConfig c, String startDate, String endDate) {
+		c.setStartDate(startDate);
+		c.setEndDate(endDate);
+	}
+
+	public static Pair<String[], List<CSVRecord>> filterColumns(ComparatorConfig config, String[] header, List<CSVRecord> recs) {
+		// No configuration supplied so we are not filtering
+		if (config == null) {
+			return Pair.of(header, recs);
+		}
+		// Establish indexes of required columns
+		String[] columnsToInclude = config.getColumns();
+		List<Integer> indexes = Lists.newArrayList();
+		if (columnsToInclude != null && columnsToInclude.length < header.length) {
+			for (String h : columnsToInclude) {
+				int index = ArrayUtils.indexOf(header, h);
+				if (index != -1) {
+					indexes.add(index);
+				}
+			}
+		}
+		// filter header row
+		List<String> filteredHeader = Lists.newArrayList();
+		for (int i : indexes) {
+			filteredHeader.add(header[i]);
+		}
+		// 
+		String[] filteredHeaders = (String[])filteredHeader.toArray(new String[filteredHeader.size()]);
+		// filter records by columns
+		List<CSVRecord> records  = filterRecordsByIndexes(recs, indexes);
+		// filter records by inclusion
+		records = filterRecords(config, filteredHeaders, records, config.getIncludeFilters(), true);		
+		// filter records by exclusion
+		records = filterRecords(config, filteredHeaders, records, config.getExcludeFilters(), false);
+		// return updated records
+		return Pair.of(filteredHeaders, records);
+	}
+
+	public static List<CSVRecord> filterRecords(ComparatorConfig config, String[] headers, List<CSVRecord> records, List<String[]> filters, boolean include) {
+		if (filters == null || filters.size() == 0) return records;
+		
+		List<CSVRecord> filtered = Lists.newArrayList();
+		for (CSVRecord r : records) {
+			if (include) {
+				boolean matched = allFiltersMatch(config, headers, filters, r);
+				if (matched) filtered.add(r);
+			} else {
+				boolean matched = anyFiltersMatch(config, headers, filters, r);
+				if (!matched) filtered.add(r);
+			}
+		}
+		return filtered;
+	}
+
+	public static boolean anyFiltersMatch(ComparatorConfig config, String[] headers, List<String[]> filters, CSVRecord r) {
+		Map<String, String> map = r.toMap(headers, null);
+		for (String[] f : filters) {
+			String column = f[0];
+			String operand = f[1];
+			String expected = f[2];
+			String actual = map.get(column);
+			if ("=".equals(operand)) {
+				if (actual.equals(expected)) {
+					return true;
+				}
+			} else if ("startsWith".equals(operand)) {
+				if (actual.startsWith(expected)) {
+					return true;
+				}
+			} else if ("endsWith".equals(operand)) {
+				if (actual.endsWith(expected)) {
+					return true;
+				}
+			} else if ("<".equals(operand) || ">".equals(operand) || "<=".equals(operand) || ">=".equals(operand)) {
+				// Assume this is only used with dates
+				Date d1 = CompUtils.parseDate(actual);
+				Date d2 = expected.startsWith("$") ? getVarDate(config, expected) : CompUtils.parseDate(expected);
+				int compare = d1.compareTo(d2);
+				switch (operand) {
+				case "<": 
+					if (compare >= 0) return false;
+					break;
+				case ">": 
+					if (compare <= 0) return false;
+					break;
+				case "<=": 
+					if (compare > 0) return false;
+					break;
+				case ">=": 
+					if (compare >= 0) return true;
+					break;
+				}
+				if (d1.compareTo(d2) < 0) {
+					return true;
+				}
+			} else {
+				throw new RuntimeException("Unsupported filter operand " + operand);
+			}
+		}
+		return false;		
+	}
+
+	public static Date getVarDate(ComparatorConfig config, String expected) {
+		if ("$START_DATE".equals(expected)) return CompUtils.parseDate(config.getStartDate());
+		if ("$END_DATE".equals(expected)) return CompUtils.parseDate(config.getEndDate());
+		return null;
+	}
+
+	public static boolean allFiltersMatch(ComparatorConfig config, String[] headers, List<String[]> filters, CSVRecord r) {
+		Map<String, String> map = r.toMap(headers, null);
+		for (String[] f : filters) {
+			String column = f[0];
+			String operand = f[1];
+			String expected = f[2];
+			String actual = map.get(column);
+			if ("=".equals(operand)) {
+				if (!actual.equals(expected)) {
+					return false;
+				}
+			} else if ("startsWith".equals(operand)) {
+				if (!actual.startsWith(expected)) {
+					return false;
+				}
+			} else if ("endsWith".equals(operand)) {
+				if (!actual.endsWith(expected)) {
+					return false;
+				}
+			} else if ("<".equals(operand) || ">".equals(operand) || "<=".equals(operand) || ">=".equals(operand)) {
+				// Assume this is only used with dates
+				Date d1 = CompUtils.parseDate(actual);
+				Date d2 = expected.startsWith("$") ? getVarDate(config, expected) : CompUtils.parseDate(expected);
+				int compare = d1.compareTo(d2);
+				switch (operand) {
+				case "<": 
+					if (compare >= 0) return false;
+					break;
+				case ">": 
+					if (compare <= 0) return false;
+					break;
+				case "<=": 
+					if (compare > 0) return false;
+					break;
+				case ">=": 
+					if (compare < 0) return false;
+					break;
+				}
+			} else {
+				throw new RuntimeException("Unsupported filter operand " + operand);
+			}
+		}
+		return true;
+	}
+
+	public static List<CSVRecord> filterRecordsByIndexes(List<CSVRecord> recs, List<Integer> indexes) {
+		List<CSVRecord> filtered = Lists.newArrayList();
+		for (CSVRecord r : recs) {
+			filtered.add(filterRecord(r, indexes));
+		}
+		return filtered;
+	}
+
+	public static CSVRecord filterRecord(CSVRecord r, List<Integer> indexes) {
+		List<String> itemList = Lists.newArrayList(r.items);
+		List<String> filteredItems = Lists.newArrayList();
+		for (int i : indexes) {
+			filteredItems.add(itemList.get(i));
+		}
+		return new CSVRecord(filteredItems.toArray(new String[filteredItems.size()]));
+	}
+	
+
 	
 	public static String getMonthStartDate() {
 		Calendar c = Calendar.getInstance();
@@ -229,11 +405,25 @@ public class CompUtils {
 		}
 
 		// Add Amarillo All sheet
-		CompUtils.addRecordsToSheet(wb, wb.createSheet("All Amarillo"), payloads[0].getAmarilloAllRecords());
+		CompUtils.addRecordsToSheet(wb, wb.createSheet("Amarillo All"), payloads[0].getAmarilloAllRecords());
 		// Add SFDC All sheet
-		CompUtils.addRecordsToSheet(wb, wb.createSheet("All SFDC"), payloads[0].getSfdcAllRecords());
-		// Add feed sheet
+		CompUtils.addRecordsToSheet(wb, wb.createSheet("SFDC All"), payloads[0].getSfdcAllRecords());
+		// Add SFDC Feed sheet
 		CompUtils.addRecordsToSheet(wb, wb.createSheet("SFDC Feed"), payloads[0].getFeedRecords());
+
+		// Add filtered product sheets
+		for (ResultPayload p : payloads) {
+			// Add Amarillo Filtered sheet
+			HSSFSheet sheet1 = wb.createSheet("Amarillo " + p.getProduct());
+			CompUtils.addRecordsToSheet(wb, sheet1, p.getAmarilloRecords(), p.getConfigs().getLeft());
+			int index1 = wb.getSheetIndex(sheet1.getSheetName());
+			wb.setSheetHidden(index1, 1);
+			// Add SFDC Filtered sheet
+			HSSFSheet sheet2 = wb.createSheet("SFDC " + p.getProduct());
+			CompUtils.addRecordsToSheet(wb, sheet2, p.getSfdcRecords(), p.getConfigs().getRight());
+			int index2 = wb.getSheetIndex(sheet2.getSheetName());
+			wb.setSheetHidden(index2, 1);
+		}
 
 		try {
 			FileOutputStream out = new FileOutputStream(file);

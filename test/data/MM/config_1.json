@@ -16,7 +16,8 @@
 	 },
 	"filters" : {
 		"include" : [ [ "Fixed Product", "=", "MM" ], [ "Marketing Territory", "=", "NAM" ] ],
-		"exclude" : [ [ "LN Attribution Group", "=", "Employee Testing" ], [ "Duplicate", "=", "1" ], [ "Backup Created By Parent", "=", "1" ], [ "Opportunity Type", "=", "Migration Customer" ] ]
+		"exclude" : [ [ "LN Attribution Group", "=", "Employee Testing" ], [ "Duplicate", "=", "1" ], 
+					  [ "Backup Created By Parent", "=", "1" ], [ "Opportunity Type", "=", "Migration Customer" ] ]
 	}
 },
 "right" : { 
@@ -25,7 +26,7 @@
 	"tenant" : "Tenant MAXML",
 	"product" : "Core Product",
 	"shortProduct" : "MM",
-	"cols" : [ "Is Valid", "Distributor Name", "Opportunity Name", "Tenant MAXML", "Core Product", "Group", "Trial Start" ],
+	"cols" : [ "Is Valid", "Distributor Name", "Opportunity Name", "Tenant MAXML", "Core Product", "Group", "Trial Start", "Created Date", "Close Date" ],
 	"coltypes" : { 
 		"Is Valid" : "integer"
 	 },
