@@ -32,7 +32,7 @@
 	 },
 	"filters" : {
 		"include" : [ [ "Core Product", "=", "1 - RM" ], [ "Group", "=", "01 - North America" ] ],
-		"exclude" : [ [ "Tenant MAXRM", "=", "" ], [ "Close Date", "<", "$START_DATE" ] ]
+		"exclude" : [ [ "Tenant MAXRM", "=", "" ] ]
 	}
 } 
 }

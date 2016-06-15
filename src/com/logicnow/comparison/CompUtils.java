@@ -30,6 +30,7 @@ import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Font;
 import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.util.CellRangeAddress;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -54,11 +55,14 @@ public class CompUtils {
 	public static final String[] COMBINED_HEADERS = new String[] { 
 		"Tenant ID", "Lead ID", "In Both", "In Amarillo Only", "In SFDC Only", 
 		"Both Valid", "Neither Valid", "Valid Amarillo Only", "Valid SFDC Only", "Mismatch", 
-		"Dupe in SFDC", "Reason", "Details" };
+		"Dupe in SFDC", "Reason", "Details", "Notes" };
 
 	public static final String MULTIPLE = "(Multiple)";
 	
-	private static int MIN_WIDTH = 3000;
+	private static final int MIN_WIDTH = 3000;
+	private static final int INFO_COL1_WIDTH = 4000;	
+	private static final int SHEET_COL_WIDTH_WIDE = 6000;
+	private static final int SHEET_COL_WIDTH_EXTRA_WIDE = 8000;
 	
 	public static void addDatesToConfig(ComparatorConfig c, String startDate, String endDate) {
 		c.setStartDate(startDate);
@@ -460,6 +464,10 @@ public class CompUtils {
 		}
 	}
 
+	public static void setColumnWidth(HSSFSheet sheet, int column, int width) {
+		sheet.setColumnWidth(column, width);
+	}
+
 	public static void autoSizeColumn(HSSFSheet sheet, int column) {
 		sheet.autoSizeColumn(column);
 		if (sheet.getColumnWidth(column) == 0) {
@@ -527,6 +535,7 @@ public class CompUtils {
 				}
 			}			
 		}
+		CompUtils.setDataFilter(sheet, 0, records.getRight().size() - 1, 0, headers.length - 1);
 	}
 
 	public static Date parseDate(String d) {
@@ -665,9 +674,15 @@ public class CompUtils {
 				}
 			}
 		}
-		for (int i = 0; i < cellnum; i++) {
-			CompUtils.autoSizeColumn(sheet, i);
-		}
+
+		CompUtils.setColumnWidth(sheet, 11, SHEET_COL_WIDTH_WIDE);
+		CompUtils.setColumnWidth(sheet, 12, SHEET_COL_WIDTH_EXTRA_WIDE);
+		CompUtils.setColumnWidth(sheet, 13, SHEET_COL_WIDTH_EXTRA_WIDE);
+		CompUtils.setDataFilter(sheet, 0, records.size() - 1, 0, CompUtils.COMBINED_HEADERS.length - 1);
+	}
+
+	public static void setDataFilter(HSSFSheet sheet, int firstRow, int lastRow, int firstCol, int lastCol) {
+		sheet.setAutoFilter(new CellRangeAddress(firstRow, lastRow, firstCol, lastCol));	
 	}
 
 	private static Pair<String, String> establishReason(ResultPayload payload, CombinedRow item) {
@@ -884,6 +899,7 @@ public class CompUtils {
 		rownum = addBlankRow(sheet, rownum);
 		rownum = addDataRow(sheet, rownum, "SQL", new Object[] { payload.getSqlWhereClause() });
 		
+		CompUtils.setColumnWidth(sheet, 0, INFO_COL1_WIDTH);
 	}
 
 	private static int addDataRow(HSSFSheet sheet, int rownum, String msg, Object[] data) {
