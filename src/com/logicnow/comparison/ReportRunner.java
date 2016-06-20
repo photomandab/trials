@@ -33,34 +33,33 @@ public class ReportRunner {
 				DIR_CONFIG + "RM/config_1.json", 
 				PREFIX_AMAR + startDate + "_" + endDate + ".csv", 
 				PREFIX_SFDC + startDate + "_" + endDate + ".csv", 
-				PREFIX_FEED + startDate + "_" + endDate + ".csv");
+				PREFIX_FEED + endDate + ".csv");
 		ResultPayload r2 = runner.run(startDate, endDate, dateTime, 
 				DIR_CONFIG + "RMIT/config_1.json", 
 				PREFIX_AMAR + startDate + "_" + endDate + ".csv", 
 				PREFIX_SFDC + startDate + "_" + endDate + ".csv", 
-				PREFIX_FEED + startDate + "_" + endDate + ".csv");
+				PREFIX_FEED + endDate + ".csv");
 		ResultPayload r3 = runner.run(startDate, endDate, dateTime, 
 				DIR_CONFIG + "BU/config_1.json", 
 				PREFIX_AMAR + startDate + "_" + endDate + ".csv", 
 				PREFIX_SFDC + startDate + "_" + endDate + ".csv", 
-				PREFIX_FEED + startDate + "_" + endDate + ".csv");
+				PREFIX_FEED + endDate + ".csv");
 		ResultPayload r4 = runner.run(startDate, endDate, dateTime, 
 				DIR_CONFIG + "MM/config_1.json", 
 				PREFIX_AMAR + startDate + "_" + endDate + ".csv", 
 				PREFIX_SFDC + startDate + "_" + endDate + ".csv", 
-				PREFIX_FEED + startDate + "_" + endDate + ".csv");
+				PREFIX_FEED + endDate + ".csv");
 		ResultPayload r5 = runner.run(startDate, endDate, dateTime, 
 				DIR_CONFIG + "MMIT/config_1.json", 
 				PREFIX_AMAR + startDate + "_" + endDate + ".csv", 
 				PREFIX_SFDC + startDate + "_" + endDate + ".csv", 
-				PREFIX_FEED + startDate + "_" + endDate + ".csv");
+				PREFIX_FEED + endDate + ".csv");
 		File tmpOutputDir = new File(DIR_OUTPUT);
 		File outputDir = new File(tmpOutputDir, dateTime);
 		if (!outputDir.exists()) outputDir.mkdirs();
 		File excelFile = new File(outputDir, "analysis_" + startDate + "_" + endDate + ".xls");
 		ExcelUtils.writeExcelFile(excelFile, false, r1, r2, r3, r4, r5);
 		System.out.println(CompUtils.generateCommentedSQL(r1, r2, r3, r4, r5));
-		
 	}
 
 }
