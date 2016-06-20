@@ -58,7 +58,7 @@ public class ReportRunner {
 		File outputDir = new File(tmpOutputDir, dateTime);
 		if (!outputDir.exists()) outputDir.mkdirs();
 		File excelFile = new File(outputDir, "analysis_" + startDate + "_" + endDate + ".xls");
-		CompUtils.writeExcelFile(excelFile, r1, r2, r3, r4, r5);
+		ExcelUtils.writeExcelFile(excelFile, false, r1, r2, r3, r4, r5);
 		System.out.println(CompUtils.generateCommentedSQL(r1, r2, r3, r4, r5));
 		
 	}
