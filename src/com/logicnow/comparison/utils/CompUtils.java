@@ -1,4 +1,4 @@
-package com.logicnow.comparison;
+package com.logicnow.comparison.utils;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -27,6 +27,9 @@ import org.apache.commons.lang3.tuple.Pair;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import com.logicnow.comparison.ComparatorConfig;
+import com.logicnow.comparison.ReportComparator;
+import com.logicnow.comparison.ResultPayload;
 import com.logicnow.comparison.ReportComparator.CombinedRow;
 import com.opencsv.CSVWriter;
 

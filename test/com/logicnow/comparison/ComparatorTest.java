@@ -15,7 +15,8 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.junit.Test;
 
 import com.google.common.collect.Lists;
-import com.logicnow.comparison.CompUtils.CSVRecord;
+import com.logicnow.comparison.utils.CompUtils;
+import com.logicnow.comparison.utils.CompUtils.CSVRecord;
 
 public class ComparatorTest {
 	

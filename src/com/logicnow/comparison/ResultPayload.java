@@ -8,7 +8,8 @@ import java.util.Set;
 import org.apache.commons.lang3.tuple.Pair;
 
 import com.google.common.collect.Sets;
-import com.logicnow.comparison.CompUtils.CSVRecord;
+import com.logicnow.comparison.utils.CompUtils;
+import com.logicnow.comparison.utils.CompUtils.CSVRecord;
 
 public class ResultPayload {
 

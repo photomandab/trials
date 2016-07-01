@@ -3,6 +3,9 @@ package com.logicnow.comparison;
 import java.io.File;
 import java.util.Calendar;
 
+import com.logicnow.comparison.utils.CompUtils;
+import com.logicnow.comparison.utils.ExcelUtils;
+
 public class ReportRunner {
 	
 	public static final String DIR_TARGET = "target";	

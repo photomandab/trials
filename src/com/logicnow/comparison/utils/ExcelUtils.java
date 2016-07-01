@@ -1,4 +1,4 @@
-package com.logicnow.comparison;
+package com.logicnow.comparison.utils;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -19,8 +19,11 @@ import org.apache.poi.ss.util.CellRangeAddress;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.logicnow.comparison.CompUtils.CSVRecord;
+import com.logicnow.comparison.ComparatorConfig;
+import com.logicnow.comparison.ReportComparator;
+import com.logicnow.comparison.ResultPayload;
 import com.logicnow.comparison.ReportComparator.CombinedRow;
+import com.logicnow.comparison.utils.CompUtils.CSVRecord;
 
 public class ExcelUtils {
 
