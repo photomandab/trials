@@ -3,8 +3,10 @@ package com.logicnow.comparison;
 import java.io.File;
 import java.util.Calendar;
 
+import com.logicnow.comparison.utils.AmarilloUtils;
 import com.logicnow.comparison.utils.CompUtils;
 import com.logicnow.comparison.utils.ExcelUtils;
+import com.logicnow.comparison.utils.SalesforceUtils;
 
 public class ReportRunner {
 	
@@ -20,7 +22,7 @@ public class ReportRunner {
 		ReportComparator comparator = new ReportComparator();
 		return comparator.compare(startDate, endDate, dateTime, config, amarillo, sfdc, feed);
 	}
-
+	
 	public static void main(String[] args) throws Exception {
 		String startDate = CompUtils.getMonthStartDate();
 		String endDate = CompUtils.getYesterdaysDate();
@@ -30,32 +32,39 @@ public class ReportRunner {
 				endDate = args[1];
 			}
 		}
+		
+		File sfdcDownloadedFile = SalesforceUtils.getSalesforceReport(CompUtils.getSalesforceDate(startDate), CompUtils.getSalesforceDate(endDate));
+		String sfdcFilePath = sfdcDownloadedFile.getAbsolutePath();
+		
+		File amarilloDownloadedFile = AmarilloUtils.getAmarilloFinanceReport(startDate, endDate);
+		String amarilloFilePath = amarilloDownloadedFile.getAbsolutePath();
+		
 		ReportRunner runner = new ReportRunner();
 		String dateTime = CompUtils.TIME_FORMAT.format(Calendar.getInstance().getTime()).replace(":", "-");
 		ResultPayload r1 = runner.run(startDate, endDate, dateTime, 
 				DIR_CONFIG + "RM/config_1.json", 
-				PREFIX_AMAR + startDate + "_" + endDate + ".csv", 
-				PREFIX_SFDC + startDate + "_" + endDate + ".csv", 
+				amarilloFilePath, 
+				sfdcFilePath, 
 				PREFIX_FEED + endDate + ".csv");
 		ResultPayload r2 = runner.run(startDate, endDate, dateTime, 
 				DIR_CONFIG + "RMIT/config_1.json", 
-				PREFIX_AMAR + startDate + "_" + endDate + ".csv", 
-				PREFIX_SFDC + startDate + "_" + endDate + ".csv", 
+				amarilloFilePath, 
+				sfdcFilePath, 
 				PREFIX_FEED + endDate + ".csv");
 		ResultPayload r3 = runner.run(startDate, endDate, dateTime, 
 				DIR_CONFIG + "BU/config_1.json", 
-				PREFIX_AMAR + startDate + "_" + endDate + ".csv", 
-				PREFIX_SFDC + startDate + "_" + endDate + ".csv", 
+				amarilloFilePath, 
+				sfdcFilePath, 
 				PREFIX_FEED + endDate + ".csv");
 		ResultPayload r4 = runner.run(startDate, endDate, dateTime, 
 				DIR_CONFIG + "MM/config_1.json", 
-				PREFIX_AMAR + startDate + "_" + endDate + ".csv", 
-				PREFIX_SFDC + startDate + "_" + endDate + ".csv", 
+				amarilloFilePath, 
+				sfdcFilePath, 
 				PREFIX_FEED + endDate + ".csv");
 		ResultPayload r5 = runner.run(startDate, endDate, dateTime, 
 				DIR_CONFIG + "MMIT/config_1.json", 
-				PREFIX_AMAR + startDate + "_" + endDate + ".csv", 
-				PREFIX_SFDC + startDate + "_" + endDate + ".csv", 
+				amarilloFilePath, 
+				sfdcFilePath, 
 				PREFIX_FEED + endDate + ".csv");
 		File tmpOutputDir = new File(DIR_OUTPUT);
 		File outputDir = new File(tmpOutputDir, dateTime);

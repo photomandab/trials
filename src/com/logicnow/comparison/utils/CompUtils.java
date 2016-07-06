@@ -28,9 +28,8 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.logicnow.comparison.ComparatorConfig;
-import com.logicnow.comparison.ReportComparator;
-import com.logicnow.comparison.ResultPayload;
 import com.logicnow.comparison.ReportComparator.CombinedRow;
+import com.logicnow.comparison.ResultPayload;
 import com.opencsv.CSVWriter;
 
 public class CompUtils {
@@ -233,14 +232,23 @@ public class CompUtils {
     	return DATE_FORMAT_2.format(c.getTime());
 	}
 
+	public static String getSalesforceDate(String dateStr) {
+		Date d = parseDate(dateStr);
+		return DATE_FORMAT_3.format(d);
+	}
+
 
 	public static String getYesterdaysDate() {
+		return getYesterdaysDate(null);
+	}
+
+	public static String getYesterdaysDate(SimpleDateFormat format) {
 		Calendar c = Calendar.getInstance();
 		c.set(Calendar.HOUR, 0);
 		c.set(Calendar.MINUTE, 0);
 		c.set(Calendar.SECOND, 0);
     	c.add(Calendar.DATE, -1);
-    	return DATE_FORMAT_2.format(c.getTime());
+    	return format != null ? format.format(c.getTime()) : DATE_FORMAT_2.format(c.getTime());
 	}
 	
 	public static String readFileAsText(File f) throws IOException {
@@ -666,6 +674,14 @@ public class CompUtils {
 			buffy.append("-- ").append(p.getProduct()).append(" ").append(p.getSqlWhereClause()).append(NL);
 		}
 		return buffy.toString();
+	}
+
+	public static String getProperty(String property) {
+		return getProperty(property, null);
+	}
+	
+	public static String getProperty(String property, String defaultValue) {
+		return System.getProperties().getProperty(property, defaultValue);
 	}
 
 }

@@ -20,9 +20,8 @@ import org.apache.poi.ss.util.CellRangeAddress;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.logicnow.comparison.ComparatorConfig;
-import com.logicnow.comparison.ReportComparator;
-import com.logicnow.comparison.ResultPayload;
 import com.logicnow.comparison.ReportComparator.CombinedRow;
+import com.logicnow.comparison.ResultPayload;
 import com.logicnow.comparison.utils.CompUtils.CSVRecord;
 
 public class ExcelUtils {
