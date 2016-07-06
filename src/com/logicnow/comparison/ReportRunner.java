@@ -6,6 +6,7 @@ import java.util.Calendar;
 import com.logicnow.comparison.utils.AmarilloUtils;
 import com.logicnow.comparison.utils.CompUtils;
 import com.logicnow.comparison.utils.ExcelUtils;
+import com.logicnow.comparison.utils.RemoteUtils;
 import com.logicnow.comparison.utils.SalesforceUtils;
 
 public class ReportRunner {
@@ -39,33 +40,36 @@ public class ReportRunner {
 		File amarilloDownloadedFile = AmarilloUtils.getAmarilloFinanceReport(startDate, endDate);
 		String amarilloFilePath = amarilloDownloadedFile.getAbsolutePath();
 		
+		File sfdcFeedFile = RemoteUtils.getMostRecentSFDCFeedFile();
+		String sfdcFeedFilePath = sfdcFeedFile.getAbsolutePath();
+		
 		ReportRunner runner = new ReportRunner();
 		String dateTime = CompUtils.TIME_FORMAT.format(Calendar.getInstance().getTime()).replace(":", "-");
 		ResultPayload r1 = runner.run(startDate, endDate, dateTime, 
 				DIR_CONFIG + "RM/config_1.json", 
 				amarilloFilePath, 
 				sfdcFilePath, 
-				PREFIX_FEED + endDate + ".csv");
+				sfdcFeedFilePath);
 		ResultPayload r2 = runner.run(startDate, endDate, dateTime, 
 				DIR_CONFIG + "RMIT/config_1.json", 
 				amarilloFilePath, 
 				sfdcFilePath, 
-				PREFIX_FEED + endDate + ".csv");
+				sfdcFeedFilePath);
 		ResultPayload r3 = runner.run(startDate, endDate, dateTime, 
 				DIR_CONFIG + "BU/config_1.json", 
 				amarilloFilePath, 
 				sfdcFilePath, 
-				PREFIX_FEED + endDate + ".csv");
+				sfdcFeedFilePath);
 		ResultPayload r4 = runner.run(startDate, endDate, dateTime, 
 				DIR_CONFIG + "MM/config_1.json", 
 				amarilloFilePath, 
 				sfdcFilePath, 
-				PREFIX_FEED + endDate + ".csv");
+				sfdcFeedFilePath);
 		ResultPayload r5 = runner.run(startDate, endDate, dateTime, 
 				DIR_CONFIG + "MMIT/config_1.json", 
 				amarilloFilePath, 
 				sfdcFilePath, 
-				PREFIX_FEED + endDate + ".csv");
+				sfdcFeedFilePath);
 		File tmpOutputDir = new File(DIR_OUTPUT);
 		File outputDir = new File(tmpOutputDir, dateTime);
 		if (!outputDir.exists()) outputDir.mkdirs();

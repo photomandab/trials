@@ -27,6 +27,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import com.google.common.io.Files;
 import com.logicnow.comparison.ComparatorConfig;
 import com.logicnow.comparison.ReportComparator.CombinedRow;
 import com.logicnow.comparison.ResultPayload;
@@ -450,7 +451,9 @@ public class CompUtils {
 		String filename = f.getName();
 		int dotIndex = filename.indexOf(".");
 		String updatedFileName = filename.substring(0, dotIndex) + "_x" + filename.substring(dotIndex);
-		File updatedFile = new File(f.getParentFile(), updatedFileName);
+		
+		File myTempDir = Files.createTempDir();
+		File updatedFile = new File(myTempDir, updatedFileName);
 		FileUtils.writeLines(updatedFile, ENCODING_UTF_8, lines);
 		return updatedFile;
 	}
