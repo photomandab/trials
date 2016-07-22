@@ -15,9 +15,18 @@
 		"GA Client ID" : "strip"
 	 },
 	"filters" : {
-		"include" : [ [ "Fixed Product", "=", "RM" ], [ "RM Internal Distributor", "=", "1" ], [ "Marketing Territory", "=", "NAM" ] ],
-		"exclude" : [ [ "LN Attribution Group", "=", "Employee Testing" ], [ "LN Attribution Group", "=", "Existing Customer" ], 
-					  [ "RM Company Type", "=", "Direct" ], [ "Duplicate", "=", "1" ], [ "Opportunity Type", "=", "Migration Customer" ]]
+		"include" : [ 
+			[ "Fixed Product", "=", "RM" ], 
+			[ "RM Internal Distributor", "=", "1" ], 
+			[ "Marketing Territory", "=", "NAM" ] 
+		],
+		"exclude" : [ 
+			[ "LN Attribution Group", "=", "Employee Testing" ], 
+			[ "LN Attribution Group", "=", "Existing Customer" ], 
+			[ "RM Company Type", "=", "Direct" ], 
+			[ "Duplicate", "=", "1" ], 
+			[ "Opportunity Type", "=", "Migration Customer" ]
+		]
 	}
 },
 "right" : { 
@@ -31,8 +40,13 @@
 		"Is Valid" : "integer"
 	 },
 	"filters" : {
-		"include" : [ [ "Core Product", "=", "1 - RM" ], [ "Group", "=", "01 - North America" ] ],
-		"exclude" : [ [ "Tenant MAXRM", "=", "" ] ]
+		"include" : [ 
+			[ "Core Product", "=", "1 - RM" ], 
+			[ "Group", "=", "01 - North America" ] 
+		],
+		"exclude" : [ 
+			[ "Tenant MAXRM", "=", "" ] 
+		]
 	}
 } 
 }

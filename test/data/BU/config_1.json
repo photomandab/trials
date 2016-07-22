@@ -15,9 +15,16 @@
 		"GA Client ID" : "strip"
 	 },
 	"filters" : {
-		"include" : [ [ "Fixed Product", "=", "BU" ], [ "Marketing Territory", "=", "NAM" ] ],
-		"exclude" : [ [ "LN Attribution Group", "=", "Employee Testing" ], [ "Duplicate", "=", "1" ], 
-					  [ "Backup Created By Parent", "=", "1" ], [ "Opportunity Type", "=", "Migration Customer" ] ]
+		"include" : [ 
+			[ "Fixed Product", "=", "BU" ], 
+			[ "Marketing Territory", "=", "NAM" ] 
+		],
+		"exclude" : [ 
+			[ "LN Attribution Group", "=", "Employee Testing" ], 
+			[ "Duplicate", "=", "1" ], 
+			[ "Backup Created By Parent", "=", "1" ], 
+			[ "Opportunity Type", "=", "Migration Customer" ] 
+		]
 	}
 },
 "right" : { 
@@ -31,8 +38,13 @@
 		"Is Valid" : "integer"
 	 },
 	"filters" : {
-		"include" : [ [ "Core Product", "=", "3 - Backup" ], [ "Group", "=", "01 - North America" ] ],
-		"exclude" : [ [ "Tenant MAXBU", "=", "" ] ]
+		"include" : [ 
+			[ "Core Product", "=", "3 - Backup" ], 
+			[ "Group", "=", "01 - North America" ] 
+		],
+		"exclude" : [ 
+			[ "Tenant MAXBU", "=", "" ] 
+		]
 	}
 } 
 }

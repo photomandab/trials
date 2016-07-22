@@ -270,7 +270,7 @@ public class CompUtils {
 			}
 		} else if ("BU".equals(product)) {
 			id = "backup:" + tenant;
-		} else if ("MM".equals(product) || "MM(IT)".equals(product)) {
+		} else if ("MM".equals(product) || "MM(IT)".equals(product) || "RI".equals(product)) {
 			id = tenant;
 		}
 		return id;
@@ -370,7 +370,7 @@ public class CompUtils {
 		for (int i = 0; i < list.size(); i++) {
 			uniqueLeads.addAll(list.get(i));
 		}
-		if ("MM".equals(product) || "MM(IT)".equals(product)) {
+		if ("MM".equals(product) || "MM(IT)".equals(product) || "RI".equals(product)) {
 			buffy.append("and tenant_id.value in ");			
 		} else {
 			buffy.append("and l.lead_id in ");			
@@ -482,6 +482,8 @@ public class CompUtils {
 		if ("LN - MAXIT".equals(p)) return "RM(IT)";
 		if ("LN - MAX Mail".equals(p)) return "MM";
 		if ("LN - MAX Mail IT".equals(p)) return "MM(IT)";
+		if ("RI".equals(p)) return "RI";
+		if ("LN - MAXRI".equals(p)) return "RI";
 		return p;
 	}
 	

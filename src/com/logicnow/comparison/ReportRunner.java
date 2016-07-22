@@ -70,12 +70,17 @@ public class ReportRunner {
 				amarilloFilePath, 
 				sfdcFilePath, 
 				sfdcFeedFilePath);
+		ResultPayload r6 = runner.run(startDate, endDate, dateTime, 
+				DIR_CONFIG + "RI/config_1.json", 
+				amarilloFilePath, 
+				sfdcFilePath, 
+				sfdcFeedFilePath);
 		File tmpOutputDir = new File(DIR_OUTPUT);
 		File outputDir = new File(tmpOutputDir, dateTime);
 		if (!outputDir.exists()) outputDir.mkdirs();
 		File excelFile = new File(outputDir, "analysis_" + startDate + "_" + endDate + ".xls");
-		ExcelUtils.writeExcelFile(excelFile, false, r1, r2, r3, r4, r5);
-		System.out.println(CompUtils.generateCommentedSQL(r1, r2, r3, r4, r5));
+		ExcelUtils.writeExcelFile(excelFile, false, r1, r2, r3, r4, r5, r6);
+		System.out.println(CompUtils.generateCommentedSQL(r1, r2, r3, r4, r5, r6));
 	}
 
 }
