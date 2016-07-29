@@ -52,7 +52,12 @@ public class WebUtils {
 		WebElement dynElement = (new WebDriverWait(driver, timeoutInSeconds)).until(ExpectedConditions.presenceOfElementLocated(locator));
 		return dynElement;
 	}
-	
+
+	public static WebElement waitForClickable(WebDriver driver, long timeoutInSeconds, By locator) {
+		WebElement dynElement = (new WebDriverWait(driver, timeoutInSeconds)).until(ExpectedConditions.elementToBeClickable(locator));
+		return dynElement;
+	}
+
 	public static File getLatestFilefromDownloadDir(String extension) {
 		String downloadPath = System.getProperty(DOWNLOAD_DIR_PARAM);
 		File dir = new File(downloadPath);

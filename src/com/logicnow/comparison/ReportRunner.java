@@ -34,11 +34,11 @@ public class ReportRunner {
 			}
 		}
 		
-		File sfdcDownloadedFile = SalesforceUtils.getSalesforceReport(CompUtils.getSalesforceDate(startDate), CompUtils.getSalesforceDate(endDate));
-		String sfdcFilePath = sfdcDownloadedFile.getAbsolutePath();
-		
 		File amarilloDownloadedFile = AmarilloUtils.getAmarilloFinanceReport(startDate, endDate);
 		String amarilloFilePath = amarilloDownloadedFile.getAbsolutePath();
+		
+		File sfdcDownloadedFile = SalesforceUtils.getSalesforceReport(CompUtils.getSalesforceDate(startDate), CompUtils.getSalesforceDate(endDate));
+		String sfdcFilePath = sfdcDownloadedFile.getAbsolutePath();
 		
 		File sfdcFeedFile = RemoteUtils.getMostRecentSFDCFeedFile();
 		String sfdcFeedFilePath = sfdcFeedFile.getAbsolutePath();
@@ -46,32 +46,32 @@ public class ReportRunner {
 		ReportRunner runner = new ReportRunner();
 		String dateTime = CompUtils.TIME_FORMAT.format(Calendar.getInstance().getTime()).replace(":", "-");
 		ResultPayload r1 = runner.run(startDate, endDate, dateTime, 
-				DIR_CONFIG + "RM/config_1.json", 
+				DIR_CONFIG + "config_RM.json", 
 				amarilloFilePath, 
 				sfdcFilePath, 
 				sfdcFeedFilePath);
 		ResultPayload r2 = runner.run(startDate, endDate, dateTime, 
-				DIR_CONFIG + "RMIT/config_1.json", 
+				DIR_CONFIG + "config_RMIT.json", 
 				amarilloFilePath, 
 				sfdcFilePath, 
 				sfdcFeedFilePath);
 		ResultPayload r3 = runner.run(startDate, endDate, dateTime, 
-				DIR_CONFIG + "BU/config_1.json", 
+				DIR_CONFIG + "config_BU.json", 
 				amarilloFilePath, 
 				sfdcFilePath, 
 				sfdcFeedFilePath);
 		ResultPayload r4 = runner.run(startDate, endDate, dateTime, 
-				DIR_CONFIG + "MM/config_1.json", 
+				DIR_CONFIG + "config_MM.json", 
 				amarilloFilePath, 
 				sfdcFilePath, 
 				sfdcFeedFilePath);
 		ResultPayload r5 = runner.run(startDate, endDate, dateTime, 
-				DIR_CONFIG + "MMIT/config_1.json", 
+				DIR_CONFIG + "config_MMIT.json", 
 				amarilloFilePath, 
 				sfdcFilePath, 
 				sfdcFeedFilePath);
 		ResultPayload r6 = runner.run(startDate, endDate, dateTime, 
-				DIR_CONFIG + "RI/config_1.json", 
+				DIR_CONFIG + "config_RI.json", 
 				amarilloFilePath, 
 				sfdcFilePath, 
 				sfdcFeedFilePath);

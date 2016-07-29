@@ -238,7 +238,6 @@ public class CompUtils {
 		return DATE_FORMAT_3.format(d);
 	}
 
-
 	public static String getYesterdaysDate() {
 		return getYesterdaysDate(null);
 	}
@@ -469,8 +468,6 @@ public class CompUtils {
 	}
 
 	public static String mappedProduct(String p) {
-		if ("RM".equals(p)) return "RM";
-		if ("RM(IT)".equals(p)) return "RM(IT)";
 		if ("1 - RM".equals(p)) return "RM";
 		if ("3 - Backup".equals(p)) return "BU";
 		if ("6 - ControlNow / MAX IT".equals(p)) return "RM(IT)";
@@ -482,13 +479,11 @@ public class CompUtils {
 		if ("LN - MAXIT".equals(p)) return "RM(IT)";
 		if ("LN - MAX Mail".equals(p)) return "MM";
 		if ("LN - MAX Mail IT".equals(p)) return "MM(IT)";
-		if ("RI".equals(p)) return "RI";
 		if ("LN - MAXRI".equals(p)) return "RI";
 		return p;
 	}
 	
 	public static String mappedRegion(String region) {
-		if ("NAM".equals(region)) return "NAM";
 		if ("1 - North America".equals(region)) return "NAM";
 		if ("01 - North America".equals(region)) return "NAM";
 		if ("2 - LATAM".equals(region)) return "LATAM";
@@ -503,11 +498,10 @@ public class CompUtils {
 		List<CSVRecord> aRecords = payload.getAmarilloAllMap().get(tenantId);
 		List<CSVRecord> sRecords = payload.getSfdcAllMap().get(tenantId);
 		List<CSVRecord> fRecords = payload.getFeedMap().get(tenantId);
-		
 		// Ensure we have records to make a comparison
 		if (CompUtils.isEmpty(aRecords) && (CompUtils.isEmpty(sRecords) && CompUtils.isEmpty(fRecords)))
 			return null;
-
+		// Run through potential reasons in order
 		Pair<String, String> reason = null;
 		if ((reason = checkTerritoryChange(payload, item, aRecords, sRecords, fRecords)) != null) {
 			return reason;
@@ -527,21 +521,29 @@ public class CompUtils {
 			return reason;
 		} else if ((reason = checkMissingTrialStart(payload, item, aRecords, sRecords, fRecords)) != null) {
 			return reason;
+		} else if ((reason = checkMissingFromSfdcFeed(payload, item, aRecords, sRecords, fRecords)) != null) {
+			return reason;
 		}
-		
 		return null;
 	}
 
+	private static Pair<String, String> checkMissingFromSfdcFeed(ResultPayload payload, CombinedRow item, List<CSVRecord> aRecords, List<CSVRecord> sRecords, List<CSVRecord> fRecords) {
+		List<String> entries = getAttributes(payload.getFeedRecords().getLeft(), fRecords, "TenantID");
+		if (CompUtils.isEmpty(entries)) {
+			return Pair.of("Not in SFDC Feed", "");
+		}
+		return null;
+	}
+	
 	private static Pair<String, String> checkMissingTrialStart(ResultPayload payload, CombinedRow item, List<CSVRecord> aRecords, List<CSVRecord> sRecords, List<CSVRecord> fRecords) {
 		List<String> present = getAttributes(payload.getSfdcAllRecords().getLeft(), sRecords, "Trial Start");
 		if (present == null || present.size() == 0) {
 			List<String> attributes = getAttributes(payload.getFeedRecords().getLeft(), fRecords, "Trial_Start");
 			String value = CompUtils.getListValueOrMultiple(attributes);
 			if (CompUtils.isBlank(value)) {
-				return Pair.of("No Trial Start Date", "");					
+				return Pair.of("Timing Issue", "No Trial Start in SFDC");					
 			}
 		}
-		
 		return null;
 	}
 
@@ -632,7 +634,6 @@ public class CompUtils {
 		} else if (item.isInSFDCOnly() && !CompUtils.isBlank(sProduct) && !CompUtils.isBlank(aProduct) && !sProduct.equals(aProduct)) {
 			return Pair.of("Product Change", "4:" + aProduct + " in Amarillo, " + sProduct + " in SFDC");
 		}
-		
 		return null;
 	}
 
@@ -658,7 +659,6 @@ public class CompUtils {
 		} else if (item.isInSFDCOnly() && sRegion != null && aRegion != null && !aRegion.equals(sRegion)) {
 			return Pair.of("Territory Change", "4:" + aRegion + " in Amarillo, " + sRegion + " in SFDC");
 		}
-		
 		return null;
 	}
 

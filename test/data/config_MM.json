@@ -1,15 +1,15 @@
 {
 "left" : { 
-	"id" : "Lead Id",
+	"id" : "Tenant ID",
 	"valid" : "Valid Leads",
 	"tenant" : "Tenant ID",
 	"product" : "Fixed Product",
-	"shortProduct" : "RM(IT)",
-	"cols" : [ "Lead Id","Fixed Product","Name","Date","Valid Leads","LN Attribution Group","GA Medium","GA Source",
+	"shortProduct" : "MM",
+	"cols" : [ "Lead Id","Fixed Product","Name","Date","Trial Date","Valid Leads","LN Attribution Group","GA Medium","GA Source",
 		"LN Medium","LN Source","RM Company Type","RM Internal Distributor","Duplicate","Marketing Territory",
 		"SFDC Region","SFDC Sub-Region","SFDC Lead Territory","Adv","Loc","GA Client ID","LN Lead Source","GA Tracked",
 		"Distributor Name","Tenant ID","Controlnow Migrated Tenant Id","Opportunity Type","Signup URL","Opportunity Stage",
-		"ADV Campaign Type","ADV Campaign Name","ADV Description","PPC Campaign Name","PPC Account Name" 
+		"ADV Campaign Type","ADV Campaign Name","ADV Description","PPC Campaign Name","PPC Account Name","Backup Created By Parent" 
 	],
 	"coltypes" : { 
 		"Valid Leads" : "integer", 
@@ -21,26 +21,25 @@
 	 },
 	"filters" : {
 		"include" : [ 
-			[ "Fixed Product", "=", "RM(IT)" ], 
-			[ "RM Company Type", "=", "Direct" ], 
-			[ "RM Internal Distributor", "=", "1" ], 
+			[ "Fixed Product", "=", "MM" ], 
 			[ "Marketing Territory", "=", "NAM" ] 
 		],
 		"exclude" : [ 
 			[ "LN Attribution Group", "=", "Employee Testing" ], 
-			[ "LN Attribution Group", "=", "Existing Customer" ], 
 			[ "Duplicate", "=", "1" ], 
-			[ "Opportunity Type", "=", "Migration Customer" ]
+			[ "Backup Created By Parent", "=", "1" ], 
+			[ "Opportunity Type", "=", "Migration Customer" ],
+			[ "Trial Date", "=", "" ]
 		]
 	}
 },
 "right" : { 
-	"id" : "Tenant MAXRM",
+	"id" : "Tenant MAXML",
 	"valid" : "Is Valid",
-	"tenant" : "Tenant MAXRM",
+	"tenant" : "Tenant MAXML",
 	"product" : "Core Product",
-	"shortProduct" : "RM(IT)",
-	"cols" : [ "Is Valid", "Distributor Name", "Opportunity Name", "Tenant MAXRM", "Core Product", "Group", "Trial Start", 
+	"shortProduct" : "MM",
+	"cols" : [ "Is Valid", "Distributor Name", "Opportunity Name", "Tenant MAXML", "Core Product", "Group", "Trial Start", 
 		"Created Date", "Close Date" 
 	],
 	"coltypes" : { 
@@ -48,11 +47,11 @@
 	 },
 	"filters" : {
 		"include" : [ 
-			[ "Core Product", "=", "6 - ControlNow / MAX IT" ], 
+			[ "Core Product", "=", "4 - MAX Mail" ], 
 			[ "Group", "=", "01 - North America" ] 
 		],
 		"exclude" : [ 
-			[ "Tenant MAXRM", "=", "" ] 
+			[ "Tenant MAXML", "=", "" ] 
 		]
 	}
 } 

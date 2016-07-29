@@ -4,8 +4,12 @@ import java.io.File;
 
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
 
 public class AmarilloUtils extends WebUtils {
+	
+	public static final String SERVER = "http://reporting.logicnowlabs.com/";
+//	public static final String SERVER = "http://localhost:5000/";
 
 	public static File getAmarilloFinanceReport(String startDate, String endDate) throws Exception {
 		String user = CompUtils.getProperty("USER_2");
@@ -24,11 +28,22 @@ public class AmarilloUtils extends WebUtils {
 	}
 
 	public static void login(WebDriver driver, String user, String pass) throws Exception {
-		driver.get("http://reporting.logicnowlabs.com/");
+		driver.get(SERVER);
 		setElementText(driver, By.id("Email"), user);
 		clickButton(driver, By.id("next"));
 		setElementText(driver, By.id("Passwd"), pass);
 		clickButton(driver, By.id("signIn"));
+		// Handle permissions page which may be inserted in flow
+		WebElement allowButton = null;
+		try {
+			allowButton = waitForClickable(driver, 10, By.xpath("//button[contains(text(),'Allow')]"));
+		} catch (RuntimeException e) {
+			System.out.println("Timeout ignored waiting for permissions page");
+		}
+		if (allowButton != null) {
+			allowButton.click();
+			waitForClickable(driver, 10, By.linkText("Finance"));
+		}
 	}
 
 	public static void enterStartEndDate(WebDriver driver, String startDate, String endDate) {

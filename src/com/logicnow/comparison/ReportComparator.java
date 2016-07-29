@@ -42,6 +42,8 @@ public class ReportComparator {
 		PRODUCT_TENANT_MAP.put("4 - MAX Mail", "Tenant MAXML");
 		PRODUCT_TENANT_MAP.put("5 - MAX Mail IT", "Tenant MAXML");
 		PRODUCT_TENANT_MAP.put("6 - ControlNow / MAX IT", "Tenant MAXRM");
+		PRODUCT_TENANT_MAP.put("LN - MAX Backup IT", "Tenant MAXBU");
+		PRODUCT_TENANT_MAP.put("LN - MAXRI", "Tenant MAXRI");
 	}
 	
 	
@@ -71,6 +73,11 @@ public class ReportComparator {
 		// Create configuration objects
 		ComparatorConfig leftConfig = new ComparatorConfig(configs.getJsonObject(CompUtils.PARAM_LEFT));
 		ComparatorConfig rightConfig = new ComparatorConfig(configs.getJsonObject(CompUtils.PARAM_RIGHT));
+		
+		System.out.println("Amarillo config:");
+		System.out.println(leftConfig.asString());
+		System.out.println("SFDC config:");
+		System.out.println(rightConfig.asString());
 
 		CompUtils.addDatesToConfig(leftConfig, startDate, endDate);
 		CompUtils.addDatesToConfig(rightConfig, startDate, endDate);
@@ -215,17 +222,13 @@ public class ReportComparator {
 		System.out.println(MessageFormat.format("Amarillo Only: ({0}) ({1})", new Object[] { onlyAmarilloValidSize, CompUtils.toPercentage(onlyAmarilloValidSize, totalSize) }));
 		System.out.println(MessageFormat.format("SFDC Only:     ({0}) ({1})", new Object[] { onlySFDCValidSize, CompUtils.toPercentage(onlySFDCValidSize, totalSize) }));
 		System.out.println(MessageFormat.format("Mismatch:      ({0}) ({1})", new Object[] { mismatchSize, CompUtils.toPercentage(mismatchSize, totalSize) }));
-		System.out.println(MessageFormat.format("Differences    ({0}) ({1})", new Object[] { diffSize, CompUtils.toPercentage(diffSize, totalSize) }));
-		
+		System.out.println(MessageFormat.format("Differences    ({0}) ({1})", new Object[] { diffSize, CompUtils.toPercentage(diffSize, totalSize) }));		
 		System.out.println();
 		System.out.println(MessageFormat.format("Amarillo Only:\n{0}", new Object[] { CompUtils.getDBString(onlyAmarilloValid) }));
 		System.out.println(MessageFormat.format("SFDC Only:\n{0}", new Object[] { CompUtils.getDBString(onlySFDCValid) }));
 		System.out.println(MessageFormat.format("Mismatch:\n{0}", new Object[] { CompUtils.getDBString(mismatchValidity) }));
-		
 		System.out.println();
-		System.out.println("SQL:");
-		System.out.println(CompUtils.writeSqlWhereClause(product, CompUtils.newList(inAmarilloOnly, inSFDCOnly, dupesInSFDC, onlyAmarilloValid, onlySFDCValid, mismatchValidity)));
-
+		
 		result.setproduct(product);
 		result.setCombined(combined);
 		result.setBoth(intersection);
@@ -284,19 +287,25 @@ public class ReportComparator {
 		String[] newHeaders = ArrayUtils.add(headers, GENERATED_TENANT);
 		String idColumn = config.getIDColumn();
 		String productColumn = config.getProductColumn();
+		String tenantColumn = config.getTenantColumn();
 		for (CSVRecord r : recs.getRight()) {
 			Map<String, String> map = r.toMap(headers);
 			String id = map.get(idColumn);
 			String product = map.get(productColumn);
-			String generatedTenant = generateTenant(id, product);
+			String tenant = map.get(tenantColumn);
+			String generatedTenant = generateTenant(id, tenant, product);
 			String[] newItems = ArrayUtils.add(r.items, generatedTenant);
 			r.items = newItems;
 		}
 		return Pair.of(newHeaders, recs.getRight());
 	}
 
-	protected String generateTenant(String id, String product) {
+	protected String generateTenant(String id, String tenant, String product) {
+		if (tenant != null) return tenant;
 		if ("RM".equals(product) || "RM(IT)".equals(product)) {
+			if (id.startsWith("salesforce")) {
+				return id.replace("salesforce:", "");
+			}
 			return id.replace("rm:", "").replace(":", "_");
 		} else if ("BU".equals(product)) {
 			return id.replace("backup:", "");
@@ -322,7 +331,7 @@ public class ReportComparator {
 				records.add(new CSVRecord(lineItems));
 		    }
 		}
-		System.out.println(MessageFormat.format("{0} rows read from [{1}]", new Object[] { records.size(), key }));
+//		System.out.println(MessageFormat.format("{0} rows read from [{1}]", new Object[] { records.size(), key }));
     	return CompUtils.filterColumns(config, headerItems, records);
 	}
 

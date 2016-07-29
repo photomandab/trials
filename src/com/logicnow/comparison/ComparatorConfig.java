@@ -11,6 +11,7 @@ import com.google.common.collect.Maps;
 
 public class ComparatorConfig {
 
+	private static final String NL = System.lineSeparator();
 	private static final String ID = "id";
 	private static final String COLS = "cols";
 	private static final String COL_TYPES = "coltypes";
@@ -125,5 +126,23 @@ public class ComparatorConfig {
 
 	public String getEndDate() { return endDate; }
 	public void setEndDate(String endDate) { this.endDate = endDate; }
+	
+	public String asString() { return asString(NL); }
+	
+	public String asString(String separator) {
+		StringBuilder buffy = new StringBuilder();
+		boolean first = true;
+		for (String[] filter : this.getIncludeFilters()) {
+			if (!first) buffy.append(separator);
+			else first = false;
+			buffy.append("include: '").append(filter[0]).append("' ").append(filter[1]).append(" '").append(filter[2]).append("'");
+		}
+		for (String[] filter : this.getExcludeFilters()) {
+			if (!first) buffy.append(separator);
+			else first = false;
+			buffy.append("exclude: '").append(filter[0]).append("' ").append(filter[1]).append(" '").append(filter[2]).append("'");
+		}
+		return buffy.toString();
+	}
 	
 }

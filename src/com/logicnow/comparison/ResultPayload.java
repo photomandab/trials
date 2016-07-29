@@ -123,6 +123,9 @@ public class ResultPayload {
 	public Pair<ComparatorConfig, ComparatorConfig> getConfigs() { return configs; }
 	public void setConfig(Pair<ComparatorConfig, ComparatorConfig> configs) { this.configs = configs; }
 
+	public ComparatorConfig getAmarilloConfig() { return getConfigs().getLeft(); }
+	public ComparatorConfig getSfdcConfig() { return getConfigs().getRight(); }
+
 	public String getDate() { return endDate;}
 	public String getConfigFile() { return configFile; }
 	public String getAmarilloFile() { return amarilloFile; }

@@ -128,6 +128,9 @@ public class ExcelUtils {
 		rownum = addDataRow(sheet, rownum, "Differences", new Object[] { diffSize, CompUtils.toPercentage(diffSize, totalSize) });
 		rownum = addBlankRow(sheet, rownum);
 		rownum = addDataRow(sheet, rownum, "SQL", new Object[] { payload.getSqlWhereClause() });
+		rownum = addBlankRow(sheet, rownum);
+		rownum = addDataRow(sheet, rownum, "Config Amarillo", new Object[] { payload.getAmarilloConfig().asString(", ") });
+		rownum = addDataRow(sheet, rownum, "Config SFDC", new Object[] { payload.getSfdcConfig().asString(", ") });
 		
 		setColumnWidth(sheet, 0, INFO_COL1_WIDTH);
 	}
