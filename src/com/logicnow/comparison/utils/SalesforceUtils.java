@@ -7,6 +7,9 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.support.ui.Select;
 
 public class SalesforceUtils extends WebUtils {
+	
+	public static final String USER_PROP = "USER_SFDC";
+	public static final String PASS_PROP = "PASS_SFDC";
 
 	public static void salesforceLogin(WebDriver driver, String user, String pass) throws Exception {
 		driver.get("https://logicnow.my.salesforce.com/");
@@ -33,8 +36,8 @@ public class SalesforceUtils extends WebUtils {
 
 	public static File getSalesforceReport(String startDate, String endDate) throws Exception {
 		WebDriver driver = SalesforceUtils.getFirefoxDriver();
-		String user = CompUtils.getProperty("USER_1");
-		String pass = CompUtils.getProperty("PASS_1");
+		String user = CompUtils.getProperty(USER_PROP);
+		String pass = CompUtils.getProperty(PASS_PROP);
 		salesforceLogin(driver, user, pass);
 		runReport(driver, "00O500000046Yft", startDate, endDate);
 		close(driver);

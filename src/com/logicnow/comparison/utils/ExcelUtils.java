@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.TreeSet;
 
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.tuple.Triple;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
@@ -155,9 +156,10 @@ public class ExcelUtils {
 			if (payload.getMismatchValidity().contains(tenant)) row.mismatch = 1;
 			if (payload.getSfdcDupes().contains(tenant)) row.dupeInSFDC = 1;
 			// Try and establish a reason for discrepancy
-			Pair<String, String> reasons = CompUtils.establishReason(payload, row);
+			Triple<String, String, String> reasons = CompUtils.establishReason(payload, row);
 			row.reason1 = reasons != null ? reasons.getLeft() : "";
-			row.reason2 = reasons != null ? reasons.getRight() : "";
+			row.reason2 = reasons != null ? reasons.getMiddle() : "";
+			row.reason3 = reasons != null ? reasons.getRight() : "";
 			// Add the item to the list
 			records.add(row);
 		}

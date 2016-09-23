@@ -8,12 +8,14 @@ import org.openqa.selenium.WebElement;
 
 public class AmarilloUtils extends WebUtils {
 	
+	public static final String USER_PROP = "USER_LIES";
+	public static final String PASS_PROP = "PASS_LIES";
+
 	public static final String SERVER = "http://reporting.logicnowlabs.com/";
-//	public static final String SERVER = "http://localhost:5000/";
 
 	public static File getAmarilloFinanceReport(String startDate, String endDate) throws Exception {
-		String user = CompUtils.getProperty("USER_2");
-		String pass = CompUtils.getProperty("PASS_2");
+		String user = CompUtils.getProperty(USER_PROP);
+		String pass = CompUtils.getProperty(PASS_PROP);
 		WebDriver driver = getFirefoxDriver();
 		login(driver, user, pass);
 		clickLink(driver, "Finance");

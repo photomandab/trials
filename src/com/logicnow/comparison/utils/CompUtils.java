@@ -23,6 +23,7 @@ import java.util.TreeSet;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.tuple.Triple;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -493,7 +494,7 @@ public class CompUtils {
 		return region;
 	}
 
-	public static Pair<String, String> establishReason(ResultPayload payload, CombinedRow item) {
+	public static Triple<String, String, String> establishReason(ResultPayload payload, CombinedRow item) {
 		String tenantId = item.tenantId;
 		List<CSVRecord> aRecords = payload.getAmarilloAllMap().get(tenantId);
 		List<CSVRecord> sRecords = payload.getSfdcAllMap().get(tenantId);
@@ -502,14 +503,12 @@ public class CompUtils {
 		if (CompUtils.isEmpty(aRecords) && (CompUtils.isEmpty(sRecords) && CompUtils.isEmpty(fRecords)))
 			return null;
 		// Run through potential reasons in order
-		Pair<String, String> reason = null;
+		Triple<String, String, String> reason = null;
 		if ((reason = checkTerritoryChange(payload, item, aRecords, sRecords, fRecords)) != null) {
 			return reason;
 		} else if ((reason = checkProductChange(payload, item, aRecords, sRecords, fRecords)) != null) {
 			return reason;
 		} else if ((reason = checkReUsedTenant(payload, item, aRecords, sRecords, fRecords)) != null) {
-			return reason;
-		} else if ((reason = checkEmployeeTesting(payload, item, aRecords, sRecords, fRecords)) != null) {
 			return reason;
 		} else if ((reason = checkSFDCDupesVaryingValidity(payload, item, aRecords, sRecords, fRecords)) != null) {
 			return reason;
@@ -519,56 +518,85 @@ public class CompUtils {
 			return reason;
 		} else if ((reason = checkOpportunityType(payload, item, aRecords, sRecords, fRecords)) != null) {
 			return reason;
-		} else if ((reason = checkMissingTrialStart(payload, item, aRecords, sRecords, fRecords)) != null) {
+		} else if ((reason = checkSolarwindsOpp(payload, item, aRecords, sRecords, fRecords)) != null) {
+			return reason;
+		} else if ((reason = checkEmployeeTesting(payload, item, aRecords, sRecords, fRecords)) != null) {
+			return reason;
+		} else if ((reason = checkTrialStartinSFDCButNotAmarillo(payload, item, aRecords, sRecords, fRecords)) != null) {
+			return reason;
+		} else if ((reason = checkTrialStartMissingFromSFDC(payload, item, aRecords, sRecords, fRecords)) != null) {
+		    return reason;
+	    } else if ((reason = checkTrialStartMissingFromAmarillo(payload, item, aRecords, sRecords, fRecords)) != null) {
 			return reason;
 		} else if ((reason = checkMissingFromSfdcFeed(payload, item, aRecords, sRecords, fRecords)) != null) {
 			return reason;
-		}
+		} 
 		return null;
 	}
 
-	private static Pair<String, String> checkMissingFromSfdcFeed(ResultPayload payload, CombinedRow item, List<CSVRecord> aRecords, List<CSVRecord> sRecords, List<CSVRecord> fRecords) {
+	private static Triple<String, String, String> checkMissingFromSfdcFeed(ResultPayload payload, CombinedRow item, List<CSVRecord> aRecords, List<CSVRecord> sRecords, List<CSVRecord> fRecords) {
 		List<String> entries = getAttributes(payload.getFeedRecords().getLeft(), fRecords, "TenantID");
 		if (CompUtils.isEmpty(entries)) {
-			return Pair.of("Not in SFDC Feed", "");
+			return Triple.of("Not in SFDC Feed", "Validity not read from SFDC", "");
 		}
 		return null;
 	}
 	
-	private static Pair<String, String> checkMissingTrialStart(ResultPayload payload, CombinedRow item, List<CSVRecord> aRecords, List<CSVRecord> sRecords, List<CSVRecord> fRecords) {
-		List<String> present = getAttributes(payload.getSfdcAllRecords().getLeft(), sRecords, "Trial Start");
-		if (present == null || present.size() == 0) {
-			List<String> attributes = getAttributes(payload.getFeedRecords().getLeft(), fRecords, "Trial_Start");
-			String value = CompUtils.getListValueOrMultiple(attributes);
+	private static Triple<String, String, String> checkTrialStartMissingFromAmarillo(ResultPayload payload, CombinedRow item, List<CSVRecord> aRecords, List<CSVRecord> sRecords, List<CSVRecord> fRecords) {
+		List<String> trialStart = getAttributes(payload.getAmarilloAllRecords().getLeft(), aRecords, "Trial Date");
+		if (trialStart == null || trialStart.size() == 0) {
+			String value = CompUtils.getListValueOrMultiple(trialStart);
 			if (CompUtils.isBlank(value)) {
-				return Pair.of("Timing Issue", "No Trial Start in SFDC");					
+				return Triple.of("Timing Issue", "Trial Start unset in Amarillo", "");					
 			}
 		}
 		return null;
 	}
 
-	private static Pair<String, String> checkOpportunityType(ResultPayload payload, CombinedRow item, List<CSVRecord> aRecords, List<CSVRecord> sRecords, List<CSVRecord> fRecords) {
+	private static Triple<String, String, String> checkTrialStartinSFDCButNotAmarillo(ResultPayload payload, CombinedRow item, List<CSVRecord> aRecords, List<CSVRecord> sRecords, List<CSVRecord> fRecords) {
+		String amarilloTrialDate = CompUtils.getListValueOrMultiple(getAttributes(payload.getAmarilloAllRecords().getLeft(), aRecords, "Trial Date"));
+		String sfdcTrialDate = CompUtils.getListValueOrMultiple(getAttributes(payload.getSfdcAllRecords().getLeft(), sRecords, "Trial Start"));
+		String sfdcOppCreateDate = CompUtils.getListValueOrMultiple(getAttributes(payload.getSfdcAllRecords().getLeft(), sRecords, "Created Date"));
+		if (CompUtils.isBlank(amarilloTrialDate) && !CompUtils.isBlank(sfdcTrialDate)) {
+			return Triple.of("Timing Issue", "Trial Start unset in Amarillo set in SFDC", "Opp Created " + sfdcOppCreateDate + ", SFDC Trial Start " + sfdcTrialDate);					
+		}
+		return null;
+	}
+
+	private static Triple<String, String, String> checkTrialStartMissingFromSFDC(ResultPayload payload, CombinedRow item, List<CSVRecord> aRecords, List<CSVRecord> sRecords, List<CSVRecord> fRecords) {
+		List<String> present = getAttributes(payload.getSfdcAllRecords().getLeft(), sRecords, "Trial Start");
+		if (present == null || present.size() == 0) {
+			List<String> attributes = getAttributes(payload.getFeedRecords().getLeft(), fRecords, "Trial_Start");
+			String value = CompUtils.getListValueOrMultiple(attributes);
+			if (CompUtils.isBlank(value)) {
+				return Triple.of("Timing Issue", "Trial Start unset in SFDC", "");					
+			}
+		}
+		return null;
+	}
+
+	private static Triple<String, String, String> checkOpportunityType(ResultPayload payload, CombinedRow item, List<CSVRecord> aRecords, List<CSVRecord> sRecords, List<CSVRecord> fRecords) {
 		List<String> attributes = getAttributes(payload.getFeedRecords().getLeft(), fRecords, "OpportunityType");
 		String value = CompUtils.getListValueOrMultiple(attributes);
 		if (value != null) {
 			String val = value.toLowerCase();
 			if (val.contains("renewal") || val.contains("migration") || val.contains("customer")) {
-				return Pair.of("Excluded from SFDC", "Type " + value);					
+				return Triple.of("Excluded from SFDC", "Type " + value, "");					
 			} 
 		}
 		return null;
 	}
 
-	private static Pair<String, String> checkCustomerTrial(ResultPayload payload, CombinedRow item, List<CSVRecord> aRecords, List<CSVRecord> sRecords, List<CSVRecord> fRecords) {
+	private static Triple<String, String, String> checkCustomerTrial(ResultPayload payload, CombinedRow item, List<CSVRecord> aRecords, List<CSVRecord> sRecords, List<CSVRecord> fRecords) {
 		List<String> attributes = getAttributes(payload.getFeedRecords().getLeft(), fRecords, "Source");
 		String value = CompUtils.getListValueOrMultiple(attributes);
 		if ("Customer Trial".equals(value)) {
-			return Pair.of("Excluded from SFDC", "Source is Customer Trial");					
+			return Triple.of("Excluded from SFDC", "Source is Customer Trial", "");					
 		}
 		return null;
 	}
 
-	private static Pair<String, String> checkTimingIssue(ResultPayload payload, CombinedRow item, List<CSVRecord> aRecords, List<CSVRecord> sRecords, List<CSVRecord> fRecords) {
+	private static Triple<String, String, String> checkTimingIssue(ResultPayload payload, CombinedRow item, List<CSVRecord> aRecords, List<CSVRecord> sRecords, List<CSVRecord> fRecords) {
 		Date start = payload.getStartDate();
 		Date end = payload.getEndDate();
 		List<String> attributes = getAttributes(payload.getFeedRecords().getLeft(), fRecords, "Trial_Start");
@@ -576,43 +604,62 @@ public class CompUtils {
 		Date trialStart = (value != null && !CompUtils.MULTIPLE.equals(value)) ? parseDate(value) : null;
 		if (trialStart != null) {
 			if (trialStart.before(start) || trialStart.after(end)) {
-				return Pair.of("Timing Issue", "Trial Start out of Range in SFDC");					
+				return Triple.of("Timing Issue", "Trial Start out of Range in SFDC", "");					
 			}
 		}
 		return null;
 	}
 
-	private static Pair<String, String> checkSFDCDupesVaryingValidity(ResultPayload payload, CombinedRow item, List<CSVRecord> aRecords, List<CSVRecord> sRecords, List<CSVRecord> fRecords) {
+	private static Triple<String, String, String> checkSFDCDupesVaryingValidity(ResultPayload payload, CombinedRow item, List<CSVRecord> aRecords, List<CSVRecord> sRecords, List<CSVRecord> fRecords) {
 		if (payload.getSfdcDupes().contains(item.tenantId)) {
 			List<String> attributes = getAttributes(payload.getSfdcAllRecords().getLeft(), sRecords, "Is Valid");
 			String value = CompUtils.getListValueOrMultiple(attributes);
 			if (CompUtils.MULTIPLE.equals(value)) {
-				return Pair.of("Multiple entry in SFDC", "Different validity values");
+				return Triple.of("Multiple entry in SFDC", "Different validity values", "");
 			}
 		}
 		return null;
 	}
 
-	private static Pair<String, String> checkEmployeeTesting(ResultPayload payload, CombinedRow item, List<CSVRecord> aRecords, List<CSVRecord> sRecords, List<CSVRecord> fRecords) {
-		List<String> attribution = getAttributes(payload.getAmarilloAllRecords().getLeft(), aRecords, "LN Attribution Group");
-		String value = CompUtils.getListValueOrMultiple(attribution);
-		if ("Employee Testing".equals(value)) {
-			return Pair.of("Employee Testing", "Amarillo identifies as Test Trial");
+	private static Triple<String, String, String> checkEmployeeTesting(ResultPayload payload, CombinedRow item, List<CSVRecord> aRecords, List<CSVRecord> sRecords, List<CSVRecord> fRecords) {
+		String attributionValue = CompUtils.getListValueOrMultiple(getAttributes(payload.getAmarilloAllRecords().getLeft(), aRecords, "LN Attribution Group"));
+		String isRealNoteValue = CompUtils.getListValueOrMultiple(getAttributes(payload.getAmarilloAllRecords().getLeft(), aRecords, "Is Real Note"));
+		StringBuilder buffy = new StringBuilder();
+		if ("Employee Testing".equals(attributionValue)) {
+			if (isRealNoteValue != null) buffy.append(isRealNoteValue);
+			if (isRealNoteValue != null) {
+				if (isRealNoteValue.contains("email address")) {
+					String attr = CompUtils.getListValueOrMultiple(getAttributes(payload.getAmarilloAllRecords().getLeft(), aRecords, "Email"));
+					if (attr != null) buffy.append(" ").append(attr);
+				} else if (isRealNoteValue.contains("opportunity_stage_detail")) {
+					String attr = CompUtils.getListValueOrMultiple(getAttributes(payload.getAmarilloAllRecords().getLeft(), aRecords, "Opportunity Stage Detail"));
+					if (attr != null) buffy.append(" ").append(attr);
+				}
+			}
+			return Triple.of("Employee Testing", "Amarillo identified as Test Trial", buffy.toString());
 		}
 		return null;
 	}
 
-	private static Pair<String, String> checkReUsedTenant(ResultPayload payload, CombinedRow item, List<CSVRecord> aRecords, List<CSVRecord> sRecords, List<CSVRecord> fRecords) {
+	private static Triple<String, String, String> checkSolarwindsOpp(ResultPayload payload, CombinedRow item, List<CSVRecord> aRecords, List<CSVRecord> sRecords, List<CSVRecord> fRecords) {
+		String oppNameValue = CompUtils.getListValueOrMultiple(getAttributes(payload.getSfdcAllRecords().getLeft(), sRecords, "Opportunity Name"));
+		if (oppNameValue != null && oppNameValue.contains("SolarWinds Opp")) {
+			return Triple.of("SolarWinds Opp", oppNameValue, "");
+		}
+		return null;
+	}
+
+	private static Triple<String, String, String> checkReUsedTenant(ResultPayload payload, CombinedRow item, List<CSVRecord> aRecords, List<CSVRecord> sRecords, List<CSVRecord> fRecords) {
 		if (item.isInAmarilloOnly()) {
 			List<String> tenants = getAttributes(payload.getFeedRecords().getLeft(), fRecords, "TenantID");
 			if (CompUtils.isEmpty(tenants)) {
-				return Pair.of("Not in SFDC Feed", "Validity not read from SFDC");
+				return Triple.of("Not in SFDC Feed", "Validity not read from SFDC", "");
 			}
 		}
 		return null;
 	}
 
-	private static Pair<String, String> checkProductChange(ResultPayload payload, CombinedRow item, List<CSVRecord> aRecords, List<CSVRecord> sRecords, List<CSVRecord> fRecords) {
+	private static Triple<String, String, String> checkProductChange(ResultPayload payload, CombinedRow item, List<CSVRecord> aRecords, List<CSVRecord> sRecords, List<CSVRecord> fRecords) {
 		List<String> aProducts = getAttributes(payload.getAmarilloAllRecords().getLeft(), aRecords, "Fixed Product");
 		List<String> sProducts = getAttributes(payload.getSfdcAllRecords().getLeft(), sRecords, "Core Product");
 		List<String> fProducts = getAttributes(payload.getFeedRecords().getLeft(), fRecords, "Product");
@@ -626,18 +673,18 @@ public class CompUtils {
 		fProduct = CompUtils.mappedProduct(fProduct);
 		
 		if (item.isInBoth() && !CompUtils.isBlank(aProduct) && !aProduct.equals(sProduct)) {
-			return Pair.of("Product Change", "1:" + aProduct + " in Amarillo, " + sProduct + " in SFDC");
+			return Triple.of("Product Change", "1:" + aProduct + " in Amarillo, " + sProduct + " in SFDC", "");
 		} else if (item.isInAmarilloOnly() && !CompUtils.isBlank(sProduct) && !CompUtils.isBlank(aProduct) && !aProduct.equals(sProduct)) {
-			return Pair.of("Product Change", "2:" + aProduct + " in Amarillo, " + sProduct + " in SFDC");
+			return Triple.of("Product Change", "2:" + aProduct + " in Amarillo, " + sProduct + " in SFDC", "");
 		} else if (item.isInAmarilloOnly() && !CompUtils.isBlank(fProduct) && !CompUtils.isBlank(aProduct) && !aProduct.equals(fProduct)) {
-			return Pair.of("Product Change", "3:" + aProduct + " in Amarillo, " + fProduct + " in SFDC Feed");
+			return Triple.of("Product Change", "3:" + aProduct + " in Amarillo, " + fProduct + " in SFDC Feed", "");
 		} else if (item.isInSFDCOnly() && !CompUtils.isBlank(sProduct) && !CompUtils.isBlank(aProduct) && !sProduct.equals(aProduct)) {
-			return Pair.of("Product Change", "4:" + aProduct + " in Amarillo, " + sProduct + " in SFDC");
+			return Triple.of("Product Change", "4:" + aProduct + " in Amarillo, " + sProduct + " in SFDC", "");
 		}
 		return null;
 	}
 
-	private static Pair<String, String> checkTerritoryChange(ResultPayload payload, CombinedRow item, List<CSVRecord> aRecords, List<CSVRecord> sRecords, List<CSVRecord> fRecords) {
+	private static Triple<String, String, String> checkTerritoryChange(ResultPayload payload, CombinedRow item, List<CSVRecord> aRecords, List<CSVRecord> sRecords, List<CSVRecord> fRecords) {
 		List<String> aRegions = getAttributes(payload.getAmarilloAllRecords().getLeft(), aRecords, "Marketing Territory");
 		List<String> sRegions = getAttributes(payload.getSfdcAllRecords().getLeft(), sRecords, "Group");
 		List<String> fRegions = getAttributes(payload.getFeedRecords().getLeft(), fRecords, "Sub-Region");
@@ -651,13 +698,13 @@ public class CompUtils {
 		fRegion = CompUtils.mappedRegion(fRegion);
 		
 		if (item.isInBoth() && sRegion != null && !CompUtils.isBlank(aRegion) && !aRegion.equals(sRegion)) {
-			return Pair.of("Territory Change", "1:" + aRegion + " in Amarillo, " + sRegion + " in SFDC");
+			return Triple.of("Territory Change", "1:" + aRegion + " in Amarillo, " + sRegion + " in SFDC", "");
 		} else if (item.isInAmarilloOnly() && sRegion != null && aRegion != null && !aRegion.equals(sRegion)) {
-			return Pair.of("Territory Change", "2:" + aRegion + " in Amarillo, " + sRegion + " in SFDC");
+			return Triple.of("Territory Change", "2:" + aRegion + " in Amarillo, " + sRegion + " in SFDC", "");
 		} else if (item.isInAmarilloOnly() && fRegion != null && aRegion != null && !aRegion.equals(fRegion)) {
-			return Pair.of("Territory Change", "3:" + aRegion + " in Amarillo, " + fRegion + " in SFDC Feed");
+			return Triple.of("Territory Change", "3:" + aRegion + " in Amarillo, " + fRegion + " in SFDC Feed", "");
 		} else if (item.isInSFDCOnly() && sRegion != null && aRegion != null && !aRegion.equals(sRegion)) {
-			return Pair.of("Territory Change", "4:" + aRegion + " in Amarillo, " + sRegion + " in SFDC");
+			return Triple.of("Territory Change", "4:" + aRegion + " in Amarillo, " + sRegion + " in SFDC", "");
 		}
 		return null;
 	}

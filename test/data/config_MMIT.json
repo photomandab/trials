@@ -10,7 +10,7 @@
 		"Marketing Territory","SFDC Region","SFDC Sub-Region","SFDC Lead Territory","Adv","Loc",
 		"GA Client ID","LN Lead Source","GA Tracked","Distributor Name","Tenant ID","Controlnow Migrated Tenant Id",
 		"Opportunity Type","Signup URL","Opportunity Stage","ADV Campaign Type","ADV Campaign Name","ADV Description",
-		"PPC Campaign Name","PPC Account Name","Backup Created By Parent" 
+		"PPC Campaign Name","PPC Account Name","Trial Status", "Is Real", "Is Real Note", "Opportunity Stage", "Opportunity Stage Detail"
 	],
 	"coltypes" : { 
 		"Valid Leads" : "integer", 
@@ -28,7 +28,6 @@
 		"exclude" : [ 
 			[ "LN Attribution Group", "=", "Employee Testing" ], 
 			[ "Duplicate", "=", "1" ], 
-		    [ "Backup Created By Parent", "=", "1" ], 
 		    [ "Opportunity Type", "=", "Migration Customer" ],
 			[ "Trial Date", "=", "" ]
 		]

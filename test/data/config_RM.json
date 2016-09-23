@@ -9,7 +9,8 @@
 		"LN Medium","LN Source","RM Company Type","RM Internal Distributor","Duplicate","Marketing Territory",
 		"SFDC Region","SFDC Sub-Region","SFDC Lead Territory","Adv","Loc","GA Client ID","LN Lead Source","GA Tracked",
 		"Distributor Name","Tenant ID","Controlnow Migrated Tenant Id","Opportunity Type","Signup URL","Opportunity Stage",
-		"ADV Campaign Type","ADV Campaign Name","ADV Description","PPC Campaign Name","PPC Account Name" 
+		"ADV Campaign Type","ADV Campaign Name","ADV Description","PPC Campaign Name","PPC Account Name",
+		"Trial Status", "Is Real", "Is Real Note", "Opportunity Stage", "Opportunity Stage Detail"
 	],
 	"coltypes" : { 
 		"Valid Leads" : "integer", 

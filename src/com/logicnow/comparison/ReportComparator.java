@@ -349,6 +349,7 @@ public class ReportComparator {
 		public int dupeInSFDC = 0; 
 		public String reason1 = "";
 		public String reason2 = "";
+		public String reason3 = "";
 		public CombinedRow(String tenantId) { this.tenantId = tenantId; }
 		public Object[] getData() {
 			return new Object[] { 
@@ -364,7 +365,8 @@ public class ReportComparator {
 					mismatch,
 					dupeInSFDC,
 					reason1,
-					reason2
+					reason2,
+					reason3
 				};
 		}
 		public boolean isInBoth() { return inBoth == 1; }
